@@ -1,0 +1,18 @@
+:root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #f5edda;
+  background: #111e28;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid #8fe0cf; outline-offset: 5px; }
+button:hover { filter: brightness(1.12); }
+button:active { transform: translateY(1px); }
+h1, p { margin: 0; }
