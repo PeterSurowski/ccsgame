@@ -1,33 +1,46 @@
 import { useEffect, useRef, useState } from 'react'
-import { COLS, ROWS, TILE, CAMERA_HEIGHT, CAMERA_WIDTH, MOVEMENT_KEYS, rooms, furniture, isFloor, moveSusan, moveSusanDirection, touchDirection, moveChad, inDestination, cameraViewBox } from './worldview.js'
+import { WORLD_WIDTH, WORLD_HEIGHT, CAMERA_HEIGHT, CAMERA_WIDTH, MOVEMENT_KEYS, startingSusan, startingChad, moveSusan, moveSusanDirection, moveChad, touchDirection, cameraViewBox, reachedClassroomDoor } from './worldview.js'
+import background from './assets/backgrounds/background1.png'
+import CharacterSprite from './CharacterSprite.jsx'
+import { characterImageUrls } from './characterSprites.js'
+import { startingQuadSusan, quadSections, moveQuadSusan, quadCamera, nearDazedStudent, quadSusanScale, reachedPhilipMeeting } from './quad.js'
+import useSceneAdvance from './useSceneAdvance.js'
+import LocationArrow from './LocationArrow.jsx'
+import quadLowerLeft from './assets/scenes/quad-lowerleft.png'
+import quadUpperLeft from './assets/scenes/quad-upperleft.png'
+import quadLowerRight from './assets/scenes/quad-lowerright.png'
 
-const startingSusan = { x: 180, y: 220, facing: 'down' }
-const startingChad = { x: 180, y: 270, facing: 'down', waypoint: 0 }
+const quadBackgrounds = { lowerleft: quadLowerLeft, upperleft: quadUpperLeft, lowerright: quadLowerRight }
 
-function Character({ position, name, isSusan }) {
-  const angle = { down: 0, left: 90, up: 180, right: -90 }[position.facing]
-  return (
-    <g transform={`translate(${position.x} ${position.y})`} data-character={isSusan ? 'susan' : 'chad'}
-      data-x={position.x} data-y={position.y} aria-label={name}>
-      <ellipse cy="11" rx="18" ry="10" fill="#10202b" opacity=".4" />
-      <g transform={`rotate(${angle})`} stroke="#142633" strokeWidth="2.5">
-        <path d="M-10 9v9h7v-9M3 9v9h7v-9" fill="#233544" />
-        <ellipse cy="3" rx="14" ry="13" fill={isSusan ? '#75c8bf' : '#dd9969'} />
-        <circle cy="-9" r="10" fill="#e7b498" />
-        <path d="M-10-8q-3-17 12-12 10 3 8 13L3-12l-8 4z" fill={isSusan ? '#25303e' : '#784c39'} />
-        {isSusan && <path d="M-7-5h5m4 0h5" strokeWidth="2" />}
-        <path d="M-4 24l4 4 4-4" fill="none" stroke={isSusan ? '#8ce3d3' : '#efbf7c'} />
-      </g>
-      <rect x="-29" y="-47" width="58" height="19" rx="3" fill="#11222ee8" />
-      <text y="-34" textAnchor="middle" fill={isSusan ? '#9ce7d9' : '#f1c585'} fontSize="10" fontWeight="700">{name}</text>
-    </g>
-  )
-}
-
-export default function Worldview() {
-  const [world, setWorld] = useState({ susan: startingSusan, chad: startingChad, arrived: false })
+export default function Worldview({ onEnterClassroom, quad = false, professor, onMeetPhilip }) {
+  const initialSusan = quad ? startingQuadSusan : startingSusan
+  const [world, setWorld] = useState({
+    susan: { position: initialSusan, moving: false, animationSeconds: 0 },
+    chad: { position: startingChad, moving: false, animationSeconds: 0 },
+  })
+  const [assetError, setAssetError] = useState('')
   const viewportRef = useRef(null)
   const [cameraWidth, setCameraWidth] = useState(CAMERA_WIDTH)
+  const [showStudentDialogue, setShowStudentDialogue] = useState(false)
+  const dialoguePaused = useRef(false)
+  const studentEncountered = useRef(false)
+  const advanceHandlers = useSceneAdvance(showStudentDialogue, () => {
+    dialoguePaused.current = false
+    setShowStudentDialogue(false)
+  })
+
+  useEffect(() => {
+    const images = [...(quad ? Object.values(quadBackgrounds) : [background]), ...characterImageUrls].map(url => {
+      const image = new Image()
+      image.onerror = () => {
+        console.error('Worldview artwork failed to load:', url)
+        setAssetError('Worldview artwork could not be loaded. Please reload the page.')
+      }
+      image.src = url
+      return image
+    })
+    return () => images.forEach(image => { image.onerror = null })
+  }, [quad])
 
   useEffect(() => {
     const viewport = viewportRef.current
@@ -37,14 +50,15 @@ export default function Worldview() {
     observer.observe(viewport)
     const keys = new Set()
     let gesture = null
-    let susan = startingSusan
+    let susan = quad ? startingQuadSusan : startingSusan
     let chad = startingChad
-    let arrived = false
+    let animationSeconds = 0
+    let chadAnimationSeconds = 0
     let frame
     let previousTime
     function keyDown(event) {
       if (MOVEMENT_KEYS.has(event.code) || event.code === 'Space') event.preventDefault()
-      if (MOVEMENT_KEYS.has(event.code)) keys.add(event.code)
+      if (!dialoguePaused.current && MOVEMENT_KEYS.has(event.code)) keys.add(event.code)
     }
     function keyUp(event) {
       if (MOVEMENT_KEYS.has(event.code) || event.code === 'Space') event.preventDefault()
@@ -61,7 +75,7 @@ export default function Worldview() {
       if (pointerId !== undefined && viewport.hasPointerCapture(pointerId)) viewport.releasePointerCapture(pointerId)
     }
     function pointerDown(event) {
-      if (event.pointerType === 'mouse' || !event.isPrimary || gesture) return
+      if (dialoguePaused.current || event.pointerType === 'mouse' || !event.isPrimary || gesture) return
       event.preventDefault()
       gesture = { pointerId: event.pointerId, x: event.clientX, y: event.clientY,
         startX: event.clientX, startY: event.clientY, started: performance.now(), dragged: false }
@@ -84,15 +98,45 @@ export default function Worldview() {
     function tick(time) {
       const seconds = previousTime === undefined ? 0 : (time - previousTime) / 1000
       previousTime = time
-      const direction = touchDirection(gesture, time, viewport.getBoundingClientRect())
-      const nextSusan = direction ? moveSusanDirection(susan, direction, seconds) : moveSusan(susan, keys, seconds)
-      const nextChad = moveChad(chad, seconds)
-      if (nextSusan !== susan || nextChad !== chad) {
-        susan = nextSusan
-        chad = nextChad
-        arrived = arrived || inDestination(susan)
-        setWorld({ susan, chad, arrived })
+      const bounds = viewport.getBoundingClientRect()
+      const camera = quad ? quadCamera(susan, CAMERA_HEIGHT * bounds.width / bounds.height) : null
+      const direction = touchDirection(gesture, time, bounds,
+        camera ? (susan.y - camera.y) / camera.height : .5,
+        camera ? (susan.x - camera.x) / camera.width : .5)
+      const nextSusan = dialoguePaused.current ? susan : quad ? moveQuadSusan(susan, direction ?? {
+        dx: Number(keys.has('ArrowRight')) - Number(keys.has('ArrowLeft')),
+        dy: Number(keys.has('ArrowDown')) - Number(keys.has('ArrowUp')),
+      }, seconds) : direction ? moveSusanDirection(susan, direction, seconds) : moveSusan(susan, keys, seconds)
+      if (quad && reachedPhilipMeeting(nextSusan, professor)) {
+        clearKeys()
+        onMeetPhilip()
+        return
       }
+      if (quad && !studentEncountered.current && nearDazedStudent(nextSusan)) {
+        studentEncountered.current = true
+        dialoguePaused.current = true
+        clearKeys()
+        setShowStudentDialogue(true)
+      }
+      if (!quad && reachedClassroomDoor(nextSusan)) {
+        clearKeys()
+        onEnterClassroom()
+        return
+      }
+      const nextChad = quad ? chad : moveChad(chad, seconds)
+      const moving = !dialoguePaused.current && (nextSusan.x !== susan.x || nextSusan.y !== susan.y)
+      const chadMoving = nextChad.x !== chad.x || nextChad.y !== chad.y
+      animationSeconds = moving ? (nextSusan.facing === susan.facing ? animationSeconds : 0) + Math.min(seconds, .05) : 0
+      chadAnimationSeconds = chadMoving ? (nextChad.facing === chad.facing ? chadAnimationSeconds : 0) + Math.min(seconds, .05) : 0
+      susan = nextSusan
+      chad = nextChad
+      const snapshot = {
+        susan: { position: susan, moving, animationSeconds },
+        chad: { position: chad, moving: chadMoving, animationSeconds: chadAnimationSeconds },
+      }
+      setWorld(previous => previous.susan.position === snapshot.susan.position && previous.chad.position === snapshot.chad.position
+        && previous.susan.moving === moving && previous.chad.moving === chadMoving && !moving && !chadMoving
+        ? previous : snapshot)
       frame = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keyDown)
@@ -119,61 +163,63 @@ export default function Worldview() {
       viewport.removeEventListener('pointercancel', pointerEnd)
       viewport.removeEventListener('lostpointercapture', pointerEnd)
     }
-  }, [])
+  }, [onEnterClassroom, quad, professor, onMeetPhilip])
+
+  const section = world.susan.position.section
+  const area = quad ? quadSections[section] : { width: WORLD_WIDTH, height: WORLD_HEIGHT }
+  const camera = quad ? quadCamera(world.susan.position, cameraWidth) : null
+  const viewBox = camera ? `${camera.x} ${camera.y} ${camera.width} ${camera.height}`
+    : cameraViewBox(world.susan.position, cameraWidth, CAMERA_HEIGHT)
 
   return (
-    <section className="story-panel worldview" aria-label="Worldview playing field" aria-describedby="worldview-controls">
-      <div className="world-objective" role="status">
-        <span className="eyebrow">{world.arrived ? 'DESTINATION REACHED' : 'YOUR OBJECTIVE'}</span>
-        <p>{world.arrived ? 'You found the classroom. The classroom story is coming in the next build.' : 'Follow Chad. Enter Classroom 03, three doors down from Susan\'s office.'}</p>
-      </div>
+    <section className="worldview" aria-label={quad ? 'Quad playing field' : 'Worldview playing field'} data-section={section}
+      {...advanceHandlers}>
+      {assetError && <p className="video-notice" role="alert">{assetError}</p>}
       <div className="world-viewport" ref={viewportRef}>
-      <svg className="world-map" viewBox={cameraViewBox(world.susan, cameraWidth)} role="img"
-        aria-label="Zoomed overhead view of Susan and her immediate surroundings. The camera follows her through the office, hallway, and classrooms.">
-        <defs>
-          <pattern id="floor-lines" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M40 0H0v40" fill="none" stroke="#ffffff" strokeOpacity=".05" />
-          </pattern>
-        </defs>
-        <rect width="1120" height="600" fill="#152a37" />
-        {Array.from({ length: ROWS * COLS }, (_, index) => {
-          const col = index % COLS
-          const row = Math.floor(index / COLS)
-          return isFloor(col, row) && <rect key={index} x={col * TILE} y={row * TILE} width={TILE} height={TILE}
-            fill={row >= 8 ? '#a59880' : col < 7 ? '#416e75' : '#527b83'} />
-        })}
-        <rect width="1120" height="600" fill="url(#floor-lines)" />
-        {rooms.map(room => (
-          <g key={room.label}>
-            <path d={`M${room.x * TILE} 35h${room.width * TILE}`} stroke="#8cb3b1" strokeWidth="8" />
-            <text x={(room.x + room.width / 2) * TILE} y="67" textAnchor="middle" fill="#d8e9e4" fontSize="12" letterSpacing="1">{room.label}</text>
-            <rect x={room.door * TILE} y="283" width="40" height="34" fill={room.door === 23 ? '#e9c486' : '#dbbe93'} />
-            <path d={`M${room.door * TILE + 5} 300h30`} stroke="#665746" strokeWidth="3" />
+      <svg className="world-map" viewBox={viewBox} role="img"
+        aria-label={quad ? `Susan exploring the ${section} quad section.` : 'Susan exploring the illustrated CCS foyer, with Chad walking from the left doorway to the right doorway.'}>
+        <image href={quad ? quadBackgrounds[section] : background} width={area.width} height={area.height} />
+        {(quad ? ['susan'] : ['susan', 'chad']).sort((a, b) => world[a].position.y - world[b].position.y)
+          .map(name => <CharacterSprite key={name} name={name} {...world[name]}
+            scale={quad ? quadSusanScale(section) : 1} />)}
+        {!quad && (
+          <g transform="translate(390 120) scale(.5)" data-location="classroom-door">
+            <LocationArrow />
           </g>
-        ))}
-        <text x="560" y="448" textAnchor="middle" fontSize="13" letterSpacing="6" fill="#514b44">DESIGN DEPARTMENT</text>
-        <path d="M255 384h598m-14-8 14 8-14 8" fill="none" stroke="#f3e3bf" strokeWidth="3" strokeDasharray="10 10" opacity=".5" />
-        <rect x="920" y="240" width="40" height="33" rx="8" fill="#eac689" opacity=".3" />
-        {furniture.map(({ x, y, width, height, kind }) => (
-          <g key={`${x}-${y}`}>
-            <rect x={x + 4} y={y + 5} width={width} height={height} rx="4" fill="#132b36" opacity=".5" />
-            <rect x={x} y={y} width={width} height={height} rx="4" fill={kind === 'shelf' ? '#324653' : '#d0a97c'} stroke="#243b47" strokeWidth="3" />
-            {kind === 'desk' ? (
-              <g><rect x={x + 16} y={y + 12} width="38" height="24" fill="#203944" /><rect x={x + 85} y={y + 15} width="28" height="33" fill="#f2e1bd" /></g>
-            ) : <path d={`M${x + 9} ${y + 10}h${width - 18}`} stroke="#e8cb9e" strokeWidth="3" />}
-          </g>
-        ))}
-        {[world.susan, world.chad].sort((a, b) => a.y - b.y).map(position => (
-          <Character key={position === world.susan ? 'susan' : 'chad'} position={position}
-            name={position === world.susan ? 'SUSAN' : 'CHAD'} isSusan={position === world.susan} />
-        ))}
+        )}
       </svg>
       </div>
-      <div className="world-controls" id="worldview-controls">
-        <span><strong>ARROW KEYS</strong> Move Susan</span>
-        <span><strong>TOUCH</strong> Hold or drag to steer; release to stop</span>
-        <span><strong>SPACE / TAP</strong> Reserved / inactive in this scene</span>
-      </div>
+      {!quad && (
+        <div className="worldview-controls-hint" role="img"
+          aria-label="Move Susan with the keyboard arrow keys, or touch and hold the screen and move your finger to steer.">
+          <svg viewBox="0 0 150 210" aria-hidden="true">
+            <g className="controls-keycaps">
+              <rect x="57" y="2" width="36" height="36" rx="5" />
+              <rect x="15" y="44" width="36" height="36" rx="5" />
+              <rect x="57" y="44" width="36" height="36" rx="5" />
+              <rect x="99" y="44" width="36" height="36" rx="5" />
+            </g>
+            <g className="controls-key-arrows">
+              <path d="M75 29V11m-7 7 7-7 7 7" />
+              <path d="M42 62H24m7-7-7 7 7 7" />
+              <path d="M75 53v18m-7-7 7 7 7-7" />
+              <path d="M108 62h18m-7-7 7 7-7 7" />
+            </g>
+            <text x="75" y="104" textAnchor="middle">or</text>
+            <circle className="controls-touch-track" cx="70" cy="145" r="18" />
+            <g className="controls-touch-finger">
+              <circle className="controls-touch-contact" cx="70" cy="145" r="9" />
+              <path className="controls-hand" d="M65 173v-28a5 5 0 0 1 10 0v15-4a5 5 0 0 1 10 0v5-2a5 5 0 0 1 10 0v5a5 5 0 0 1 10 0v17c0 12-6 19-17 19H78c-6 0-10-3-14-8l-12-17a5 5 0 0 1 8-6l5 4Z" />
+            </g>
+          </svg>
+        </div>
+      )}
+      {showStudentDialogue && (
+        <div className="video-dialogue" role="status">
+          <p>Dazed student (mumbling): Why am I here? What am I learning? Will I land a job after all this?</p>
+          <small>Tap the screen or press the spacebar to continue.</small>
+        </div>
+      )}
     </section>
   )
 }

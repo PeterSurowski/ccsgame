@@ -1,0 +1,98 @@
+{
+  "susan": {
+    "idle": {
+      "up": {
+        "file": "susan-idle-up.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "down": {
+        "file": "susan-idle-down.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "left": {
+        "file": "susan-idle-left.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "right": {
+        "file": "susan-idle-right.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      }
+    },
+    "walk": {
+      "up": {
+        "file": "susan-walk-up.png",
+        "frames": 19,
+        "columns": 8,
+        "fps": 24
+      },
+      "down": {
+        "file": "susan-walk-down.png",
+        "frames": 24,
+        "columns": 8,
+        "fps": 24
+      },
+      "side": {
+        "file": "susan-walk-side.png",
+        "frames": 21,
+        "columns": 8,
+        "fps": 24
+      }
+    }
+  },
+  "chad": {
+    "idle": {
+      "up": {
+        "file": "chad-idle-up.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "down": {
+        "file": "chad-idle-down.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "left": {
+        "file": "chad-idle-left.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "right": {
+        "file": "chad-idle-right.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      }
+    },
+    "walk": {
+      "up": {
+        "file": "chad-walk-up.png",
+        "frames": 28,
+        "columns": 8,
+        "fps": 24
+      },
+      "down": {
+        "file": "chad-walk-down.png",
+        "frames": 24,
+        "columns": 8,
+        "fps": 24
+      },
+      "side": {
+        "file": "chad-walk-side.png",
+        "frames": 26,
+        "columns": 8,
+        "fps": 24
+      }
+    }
+  }
+}

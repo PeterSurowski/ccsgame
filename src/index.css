@@ -1,7 +1,7 @@
 :root {
   font-family: 'Segoe UI', system-ui, sans-serif;
   color: #f5edda;
-  background: #111e28;
+  background: #000;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -10,7 +10,8 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
+body { margin: 0; }
+#root { min-height: 100dvh; display: grid; place-items: center; background: #000; }
 button { font: inherit; cursor: pointer; }
 button:focus-visible { outline: 3px solid #8fe0cf; outline-offset: 5px; }
 button:hover { filter: brightness(1.12); }
