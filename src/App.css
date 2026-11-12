@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Comic Neue';
+  src: url('./assets/fonts/ComicNeue-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 .game-shell {
   --ccs-yellow: #fbe013;
   width: min(100vw, calc(100dvh * 9 / 16));
@@ -10,6 +18,11 @@
   background: #111e28;
 }
 .score-header { flex-shrink: 0; display: flex; align-items: center; gap: 2cqw; padding: 2cqw; background: var(--ccs-yellow); color: #000; }
+.score { position: relative; }
+.score-change { position: absolute; z-index: 5; top: calc(100% + 3cqw); left: -1cqw; right: -1cqw; color: #fff; font-family: 'Comic Neue', cursive; font-weight: 700; text-align: center; pointer-events: none; animation: score-change-fade 1.5s linear forwards; }
+.score .score-change strong { color: var(--ccs-yellow); font-size: 5cqw; opacity: .8; }
+.score-change p { margin-top: 1cqw; font-size: 4cqw; line-height: 1.2; opacity: .8; overflow-wrap: anywhere; }
+@keyframes score-change-fade { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
 .ccs-logo { display: block; width: 13cqw; height: 13cqw; object-fit: contain; flex-shrink: 0; }
 .scores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2cqw; flex: 1; min-width: 0; }
 .score-label { display: block; font-size: 2.05cqw; font-weight: 650; color: #000; margin-bottom: 1cqw; white-space: nowrap; }
@@ -36,6 +49,11 @@ main { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4
 .professor-choice { display: block; width: 100%; margin-top: 2cqw; border-radius: 2cqw; background: transparent; color: #fff; font-size: 4cqw; font-weight: 400; line-height: 1.5; text-align: left; }
 .professor-choice.selected, .professor-choice:focus-visible { background: var(--ccs-yellow); color: #000; outline: none; }
 .professor-choice:hover { border-color: var(--ccs-yellow); }
+.professor-choice:disabled { opacity: .4; cursor: not-allowed; border-color: transparent; }
+.game-over { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 6cqw; padding: 8cqw; text-align: center; background: #000; color: #fff; }
+.game-over p { font-size: 4cqw; line-height: 1.5; }
+.game-over h1 { font-size: 8cqw; }
+.game-over small { font-size: 3cqw; line-height: 1.5; }
 .video-notice { position: absolute; top: 50%; left: 4cqw; right: 4cqw; transform: translateY(-50%); padding: 4cqw; border-radius: 3cqw; background: rgb(40 40 40 / 90%); color: #fff; font-size: 3.5cqw; line-height: 1.5; text-align: center; }
 .video-notice button { margin-top: 3cqw; }
 button { border: 1px solid transparent; padding: 2.5cqw 3cqw; font-size: 2.8cqw; font-weight: 700; }
@@ -65,4 +83,46 @@ button { border: 1px solid transparent; padding: 2.5cqw 3cqw; font-size: 2.8cqw;
 @keyframes map-hint-pulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: .25; } }
 .location-arrow { fill: var(--ccs-yellow); stroke: #806609; stroke-width: 1.5; filter: drop-shadow(0 0 5px #fbe013aa); animation: location-bob 1.7s ease-in-out infinite; }
 @keyframes location-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.resume-logo-screen { background: #fbe013; }
+.resume-signin-art { position: absolute; inset: 0; margin: auto; height: 100%; aspect-ratio: 9 / 16; max-width: 100%; background: #fbe013; }
+.resume-intro-logo { position: absolute; top: 0; left: 0; width: 100%; height: 41%; object-fit: contain; pointer-events: none; }
+.resume-instructions { position: absolute; top: 41%; left: 5%; right: 5%; padding: 3cqw; border-radius: 3cqw; background: rgb(0 0 0 / 48%); color: #fff; text-align: center; }
+.resume-instructions h1 { font-size: 5.2cqw; line-height: 1.2; margin-bottom: 2cqw; }
+.resume-instructions p { font-size: 3.6cqw; line-height: 1.4; }
+.resume-swipe-guide { display: grid; grid-template-columns: 1fr 1.3fr 1fr; align-items: center; margin-top: 3cqw; font-size: 3.4cqw; line-height: 1.3; }
+.resume-swipe-guide svg { width: 100%; opacity: .65; overflow: visible; }
+.resume-swipe-track { fill: none; stroke: #fff; stroke-width: 2; opacity: .5; }
+.resume-swipe-finger { color: #fff; animation: resume-swipe 2.4s ease-in-out infinite; }
+@keyframes resume-swipe { 0%, 100% { transform: translateX(-22px); } 50% { transform: translateX(22px); } }
+.resume-key-guide { display: block; width: 32cqw; margin: 2cqw auto 3cqw; }
+.resume-key-guide rect { fill: rgb(255 255 255 / 25%); stroke: #fff; stroke-width: 2; }
+.resume-key-guide path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.resume-key-left, .resume-key-right { animation: resume-key-light 2.4s steps(1, end) infinite; }
+.resume-key-right { animation-delay: -1.2s; }
+@keyframes resume-key-light { 0%, 100% { opacity: .85; } 50% { opacity: .25; } }
+.resume-warning { font-weight: 650; }
+.resume-instructions button { margin-top: 2cqw; }
+.resume-challenge { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; background: #193444; color: #fff; }
+.resume-progress { display: flex; justify-content: space-between; padding: 3cqw 4cqw; font-size: 3cqw; }
+.resume-card-area { flex: 1; min-height: 0; display: flex; padding: 0 3cqw 3cqw; touch-action: none; }
+.resume-card { width: 100%; min-height: 0; padding: 1em; border-radius: 2cqw; color: #172a35; background: #fffdf6; font-size: 3.4cqw; line-height: 1.3; }
+.resume-card-exit { animation: resume-card-exit .35s ease-in forwards; }
+.resume-card-exit-left { --exit-x: -120%; --exit-rotation: -8deg; }
+@keyframes resume-card-exit { to { transform: translateX(var(--exit-x, 120%)) rotate(var(--exit-rotation, 8deg)); opacity: 0; } }
+.resume-person { display: flex; align-items: center; gap: 1em; margin-bottom: .6em; }
+.resume-person img { width: 4em; height: 4em; object-fit: cover; border-radius: 2cqw; user-select: none; }
+.resume-card h1 { font-size: 1.5em; line-height: 1.2; }
+.resume-card h2 { font-size: 1.1em; margin-top: .65em; margin-bottom: .2em; }
+.resume-card dl { display: grid; grid-template-columns: max-content 1fr; gap: .2em .6em; margin: .5em 0; }
+.resume-card dt { font-weight: 750; }
+.resume-card dd { margin: 0; }
+.resume-card ul { padding-left: 1.2em; }
+.resume-card li + li { margin-top: .15em; }
+.resume-actions { padding: 2cqw 3cqw 3cqw; background: #102430; text-align: center; }
+.resume-actions p { font-size: 2.8cqw; margin-bottom: 2cqw; }
+.resume-actions > div { display: flex; gap: 3cqw; }
+.resume-actions button { background: var(--ccs-yellow); color: #000; flex: 1; font-size: 3.4cqw; border-radius: 2cqw; }
+.resume-actions button:disabled { opacity: .5; cursor: wait; }
+@media (prefers-reduced-motion: reduce) { .resume-swipe-finger, .resume-key-left, .resume-key-right { animation: none; opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .resume-card-exit { animation-duration: .001s; } }
 @media (prefers-reduced-motion: reduce) { .location-arrow, .map-pan path, .controls-touch-finger { animation: none; } .scene-fade { animation-duration: .001s; } }

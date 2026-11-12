@@ -16,6 +16,10 @@ test('other scores animate both increases and decreases from their current value
   assert.equal(scoreAtTime(100, 80, 250), 90)
   assert.equal(scoreAtTime(37, 37, 500), 37)
   assert.equal(scoreAtTime(3, 10, 500), 10)
+  assert.equal(scoreAtTime(10, -10, 250), 0)
+  assert.equal(scoreAtTime(10, -10, 500), -10)
+  assert.equal(scoreAtTime(-20, 10, 250), -5)
+  assert.equal(scoreAtTime(-20, 10, 500), 10)
 })
 
 test('a short quiet tone is scheduled for every crossed integer, including missed frames', () => {

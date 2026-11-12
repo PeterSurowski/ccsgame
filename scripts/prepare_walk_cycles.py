@@ -61,8 +61,8 @@ def isolate(image, name):
     return result.crop(result.getbbox())
 
 
-def normalize(images, mirror=False):
-    scale = 200 / float(np.median([image.height for image in images]))
+def normalize(images, mirror=False, target_height=200):
+    scale = target_height / float(np.median([image.height for image in images]))
     result = []
     for image in images:
         if mirror:
@@ -99,25 +99,26 @@ def save_sheet(frames, filename):
     return {"file": filename, "frames": len(frames), "columns": columns, "fps": 24}
 
 
-manifest = {}
-for name, folder, mirror_side in [("susan", ROOT, False), ("chad", ROOT / "sprites-chad", True)]:
-    character = {"idle": {}, "walk": {}}
-    for direction, asset in [("up", "back"), ("down", "front"), ("side", "side")]:
-        path = folder / f"{name}-walking-{asset}.mp4"
-        print(path.name, flush=True)
-        reader = imageio_ffmpeg.read_frames(str(path), pix_fmt="rgb24", output_params=["-vf", "fps=24,scale=224:400"])
-        metadata = next(reader)
-        frames = [isolate(Image.frombytes("RGB", (224, 400), frame), name) for frame in reader]
-        frames = select_loop(normalize(frames, mirror=direction == "side" and mirror_side))
-        character["walk"][direction] = save_sheet(frames, f"{name}-walk-{direction}.png")
-    idle_assets = {"up": "back", "down": "front", "left": "left", "right": "right"} if name == "susan" else {
-        "up": "back", "down": "front", "left": "side", "right": "side",
-    }
-    for direction, asset in idle_assets.items():
-        image = Image.open(folder / f"{name}-idle-{asset}.png")
-        frames = normalize([isolate(image, name)], mirror=name == "chad" and direction == "right")
-        character["idle"][direction] = save_sheet(frames, f"{name}-idle-{direction}.png")
-    manifest[name] = character
+if __name__ == "__main__":
+    manifest = {}
+    for name, folder, mirror_side in [("susan", ROOT, False), ("chad", ROOT / "sprites-chad", True)]:
+        character = {"idle": {}, "walk": {}}
+        for direction, asset in [("up", "back"), ("down", "front"), ("side", "side")]:
+            path = folder / f"{name}-walking-{asset}.mp4"
+            print(path.name, flush=True)
+            reader = imageio_ffmpeg.read_frames(str(path), pix_fmt="rgb24", output_params=["-vf", "fps=24,scale=224:400"])
+            metadata = next(reader)
+            frames = [isolate(Image.frombytes("RGB", (224, 400), frame), name) for frame in reader]
+            frames = select_loop(normalize(frames, mirror=direction == "side" and mirror_side))
+            character["walk"][direction] = save_sheet(frames, f"{name}-walk-{direction}.png")
+        idle_assets = {"up": "back", "down": "front", "left": "left", "right": "right"} if name == "susan" else {
+            "up": "back", "down": "front", "left": "side", "right": "side",
+        }
+        for direction, asset in idle_assets.items():
+            image = Image.open(folder / f"{name}-idle-{asset}.png")
+            frames = normalize([isolate(image, name)], mirror=name == "chad" and direction == "right")
+            character["idle"][direction] = save_sheet(frames, f"{name}-idle-{direction}.png")
+        manifest[name] = character
 
-(OUTPUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-print("Generated both characters' transparent, foot-aligned sprite sheets.")
+    (OUTPUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print("Generated both characters' transparent, foot-aligned sprite sheets.")

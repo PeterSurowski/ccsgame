@@ -214,7 +214,168 @@ over approximately 500 ms while the playfield stays black. After the score settl
 [CCSGame-SusanAtKeyboard.png](src/assets/scenes/CCSGame-SusanAtKeyboard.png)
 fades in with Susan congratulating Philip. A separate tap or Space switches to
 [CCSGame-PhilipWeeping.png](src/assets/scenes/CCSGame-PhilipWeeping.png) and his
-plea to remove the class from his roster. This is the current story endpoint.
+plea to remove the class from his roster. Continue to Susan thinking and
+"What will you do?" with A (hire), B (push Philip), and C (ask Matt).
+The game tracks professors asked during the playthrough; C is omitted if Matt
+has already been asked. A opens the hiring introduction; C fades Susan's scene to black,
+then fades in the campus map with Matt's building-door marker. Input is paused
+during both fades. Continue with tap or Space, then walk through the quad to
+the upper-left doorway, just as when Matt was chosen in the original classroom.
+Existing scores and professor history are preserved during this trip.
+
+Choosing Matt in the original classroom shows the campus-map marker over the
+building entrance. Tap or Space enters the quad as usual. Follow the path into
+the upper-left section and reach its highest walkable tip to enter the Matt
+scene. The trigger uses the top 12 world units of the foot-safe path and only
+activates when Matt is the selected professor.
+
+## Matt Raupp conversation
+
+Both Matt selections lead through the campus map and upper-left quad doorway to the same
+[MattScene.jsx](src/MattScene.jsx) conversation, with editable text in
+[mattDialogue.js](src/mattDialogue.js). A separate tap/click or nonrepeating
+Space advances each page: Matt reviewing the project, the nervous student,
+happy Matt, the weeping student, then two dialogue pages on the hallway image.
+The final continuation fades to black before adding 10 to Engagement and
+10 to Job Placement, capped at 100. Both use the shared half-second counting
+animation and ticks; previous score gains are retained. After the scores settle,
+Susan at her keyboard fades in, then a separate input shows sleeping Matt.
+Continue to Susan thinking and a three-choice decision. Hiring (B) opens the
+hiring introduction. C is omitted if Philip has already been asked;
+otherwise it fades to black and back into the campus map with Philip's marker,
+then uses the normal lower-right quad encounter route.
+
+Pushing Matt (A) fades out and counts Engagement down to 0, retaining Job Placement.
+Matt pushing through fades in; continue to Matt mobbed by students, then fade to
+the shared uprising ending. Tap or Space restarts the entire game, as in Philip's
+ending. Input cannot skip score animations or fades.
+
+## Resume Challenge introduction
+
+Hiring from either professor's decision fades to black, then fades in Susan
+at her keyboard with "Susan: Time to go through these resumes." A separate
+tap/click or Space shows [CCSlogo.jpg](src/CCSlogo.jpg) and plays an original synthesized
+desktop-startup chime (not a Windows recording).
+The logo sits above the instructions on a background matching the JPEG's
+yellow exactly (`#fbe013`). Below it are the Resume Challenge title, goal,
+Bad Candidates on the left and Good Candidates on the right, a translucent
+left/right swiping hand, alternating arrow-key hints, and the revolt warning.
+Reduced-motion preferences make the hints static. The score header and existing
+scores remain unchanged until a candidate is accepted. Tap, Space, or the Start
+button begins the challenge.
+
+The 12 resumes and effects are editable in [resumeCandidates.js](src/resumeCandidates.js).
+They shuffle once per challenge. Swipe right, press Right,
+or click Accept to hire; left/Reject skips a resume without changing scores.
+After each pass through the deck, all unhired candidates appear again in the
+same order. Hired candidates never reappear.
+Each resume fits the available playfield without scrolling, with compact
+experience rows and automatically fitted typography on viewport changes. Each card displays
+the portrait, experience, degree, summary, strengths, and weaknesses. Score effects
+and reasons are hidden until a hire is made.
+
+Rejected cards swipe off to the left in 350 ms, mirroring the hiring animation,
+then reveal the next unhired resume without score effects.
+After hiring, the card swipes off to the right in 350 ms. The playfield then
+stays empty while Budget, GPA, Job Placement, and Engagement update one at a time,
+capped at 100 but allowed below 0, using the shared half-second counting/tick animation.
+A translucent signed amount and its reason appear directly beneath the relevant
+header score for 1.5 seconds, fading before the next effect begins.
+Amounts are CCS yellow and explanations remain white;
+both use locally bundled Comic Neue Bold, licensed under the
+[SIL Open Font License](src/assets/fonts/OFL.txt). Other game text is unchanged.
+Zero effects
+display 0 and "No change". There is no post-hire summary card or extra confirmation;
+the next resume or result appears automatically after all four effects.
+Sorting and continuation pause during the exit and score sequence.
+Reduced-motion preferences make the card exit immediate.
+Only after all three hires and their score effects finish is the result checked.
+Any final stat below 0 causes a loss; exactly 0 is allowed. Intermediate negative
+scores can recover through later hires. The deck never runs out.
+Loss fades out and into Zombies in the
+Hallway with "Don't finish with a score below 0" and "TRY AGAIN!". Tap/Space retries only
+the resume challenge: entry stats are restored and all 12 resumes reshuffle.
+It does not replay the professor storyline or hiring introduction.
+
+Three surviving hires fade into the conference scene. Tap/Space shows Peter's
+resume and Susan naming him; another input fades into Susan and Peter's interview.
+Choosing question B now prints "Peter: It all started with Oregon Trail...",
+then fades into an original retro side-scrolling flashback minigame. The player
+starts as a bike-riding boy at center screen with a bus on the far right, moves
+left/right with Arrow keys or by touching left/right of center, and follows
+Peter's scripted milestones: yard-sale Commodore 64, adulthood, young family,
+door-to-door client searches (including two repeatable building choices), and
+the M2Media breakthrough before fading back to the Susan interview scene.
+Question A first keeps the interview image and shows Peter's "It all started at
+Mt. San Jacinto College..." lead-in. A separate tap/Space fades into the Maze
+Game, using the supplied illustrated campus backgrounds, arranged as
+`A B C / D E F / G H I`. The layout is fictional, not a wayfinding map of the
+real college. Peter starts in H beside the first student.
+Arrow keys or hold/drag steer Peter through the red-painted walkable paths.
+Only the clean backgrounds are displayed; the `MazeGame-?-Walkable` guides
+generate foot-safe collision data in [mazeWalkable.json](src/mazeWalkable.json).
+The camera stays within each image, at 1.25x the original maze zoom. Peter's
+base sprite is 75% of its previous world size. NPC cutouts match Peter's base
+height. All characters scale by their foot position in the full background:
+200% at the bottom, interpolating linearly to 60% at 70% up the image
+(30% from the top), remaining at 60% above that point.
+He starts far enough from the first
+student to approach him deliberately, with that student still in view.
+There is no corner title box. Palm bases sit in landscaped areas, not on paths.
+Image changes happen at path endpoints,
+with a re-entry guard to prevent immediate bouncing.
+Stationary, transparent cutouts of the supplied standing/seated students
+offer route-accurate clues when
+approached. The opening narration pauses movement and time. A nearby first
+student introduces the deadline; after dismissing that conversation, 3:00
+glows for three seconds before the clock runs. Every subsequent conversation
+pauses time until a fresh tap/Space. Touching the Admissions front door wins
+and fades back to the interview image with Peter's reflection about his first
+taste of college and the professors who inspired him. A separate tap/Space
+returns to the choices. The supplied student line stands outside the marked
+Admissions doorway in F. Palm cutouts are foreground layers: Peter can walk
+behind their crowns. Peter uses his supplied front/back/side stills and walking
+videos, converted to the same transparent, foot-aligned sprite-sheet format
+as Susan. Originals are preserved.
+Timeout shows the requested loss/retry text;
+tap/Space resets the maze, timer, and conversations only.
+Completed A/B choices stay disabled on return, in either order. C remains
+disabled until its response is implemented. These games do not change scores.
+The authored exits are directed links, not inferred grid neighbors:
+A → D/B; B → E/A/C; C → B/F; D → G/A; E → H/D/B;
+F → D/I; G → H/D; H → G/I; I → H. A arrivals from D use the bottom-left
+path; B arrivals from A use the upper-left path. H's exit to G and arrivals
+from G use the path touching the left border, not the upper-left interior tip.
+All of I's outward paths return to H, including the right-hand and lower-center
+painted tips. Left and bottom border exits cover the full walkable edge rather
+than a single point.
+Routes, student placement and dialogue live in [mazeGame.js](src/mazeGame.js).
+To regenerate masks, student/palm cutouts and Peter sprites, run
+`python scripts\prepare_maze_assets.py` with the existing Pillow, NumPy and
+imageio-ffmpeg tools. The shared sprite preparation helpers now have a main
+guard so they can be reused without regenerating Susan or Chad.
+Result text, images, and transitions live in [ResumeResult.jsx](src/ResumeResult.jsx).
+
+Candidate effects retain the previous balance. Budget, GPA, and Peter's effects are unchanged.
+Paige's Job Placement is -30 (limited professional experience), Barb's Engagement
+is -25 (no full-time teaching experience), and Al's Engagement is -20
+(disorganized lessons). These replace 0, +20, and -15 respectively.
+All 3,960 ordered teams across the three storyline starting-score states are
+regression-tested against the final-score rule. Unlike the former immediate-loss
+rule, allowing recovery and final zero scores means Peter is no longer mandatory
+in every winning team. For example, Sammy, Al, and Paige can win from the
+both-professors starting scores, finishing with Engagement at exactly 0.
+Hiring order can still affect totals when a score reaches the upper cap of 100.
+
+B fades out, counts Engagement back to 0 with the shared ticks, then displays
+Philip teaching, two zombie-student images, and Philip running away.
+Each dialogue advances with a separate tap or Space. The supplied teaching image
+is named [CCSGame-PhilipTeaching.png](src/assets/scenes/CCSGame-PhilipTeaching.png);
+the running image has the supplied doubled prefix,
+[CCSGame-CCSGame-PhilipRunning.png](src/assets/scenes/CCSGame-CCSGame-PhilipRunning.png).
+The sequence ends on black with "You didn't stop the student uprising.",
+"THE END", and a retry prompt. Tap or Space restarts at the introduction,
+resetting every score, professor history, scene, and encounter state.
 Input during the fades or score animation does not skip the following dialogue.
 The score header remains visible throughout. Choice highlights reset at every
 question, preventing one confirmation from answering the next question.

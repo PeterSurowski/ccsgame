@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { philipDialogue as steps } from './philipDialogue.js'
+import { philipDialogue as steps, philipDecision } from './philipDialogue.js'
 
 test('all conversation branches reach assurance and fade, with correct image changes', () => {
   for (const request of [0, 1]) {
@@ -28,7 +28,7 @@ test('every choice has a valid destination and text-only dialogue has an explici
       assert.equal(step.next.length, step.choices.length)
       for (const target of step.next) assert.ok(steps[target])
     } else if (!step.prompt) {
-      assert.ok(step.advance === 'fading' || steps[step.advance])
+      assert.ok(['fading', 'decision', 'game-over'].includes(step.advance) || steps[step.advance])
     }
   }
 })
@@ -37,5 +37,25 @@ test('Susan follows the score increase and continues to Philip weeping', () => {
   assert.equal(steps.susan.image, 'susan')
   assert.equal(steps.susan.advance, 'weeping')
   assert.equal(steps.weeping.image, 'weeping')
-  assert.equal(steps.weeping.prompt, true)
+  assert.equal(steps.weeping.advance, 'decision')
+})
+
+test('Susan offers Matt only if he has not already been asked, with unfinished branches disabled', () => {
+  for (const history of [[], ['philip'], ['matt'], ['matt', 'philip'], ['philip', 'matt']]) {
+    const decision = philipDecision(history)
+    assert.equal(decision.image, 'susan-thinking')
+    assert.equal(decision.choices.length, history.includes('matt') ? 2 : 3)
+    assert.deepEqual(decision.disabled, [])
+    assert.equal(decision.next[0], 'hire-fading')
+    assert.equal(decision.next[1], 'failure-fading')
+    if (!history.includes('matt')) assert.equal(decision.next[2], 'matt')
+  }
+})
+
+test('pushing Philip leads through the complete uprising sequence to the ending', () => {
+  const sequence = ['teaching', 'zombies1', 'zombies2', 'running']
+  for (let index = 0; index < sequence.length; index += 1) {
+    assert.equal(steps[sequence[index]].image, sequence[index])
+    assert.equal(steps[sequence[index]].advance, sequence[index + 1] ?? 'game-over')
+  }
 })

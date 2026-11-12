@@ -1,0 +1,126 @@
+import { useEffect, useReducer, useRef, useState } from 'react'
+import SceneChoices from './SceneChoices.jsx'
+import useSceneAdvance from './useSceneAdvance.js'
+import PixelText from './PixelText.jsx'
+import PeterFlashbackArt from './PeterFlashbackArt.jsx'
+import { createFlashback, flashbackReducer, flashbackText } from './peterFlashback.js'
+import './PeterFlashback.css'
+
+export default function PeterFlashback({ onComplete }) {
+  const [state, dispatch] = useReducer(flashbackReducer, undefined, createFlashback)
+  const [transition, setTransition] = useState('in')
+  const [introReady, setIntroReady] = useState(false)
+  const [moving, setMoving] = useState(false)
+  const input = useRef({ keys: new Set(), pointer: null })
+  const sceneTransition = state.mode === 'complete' ? 'out' : transition
+  const canMove = !sceneTransition && state.mode === 'walking'
+  const canContinue = !sceneTransition && ['narration', 'reaction'].includes(state.mode)
+  const handlers = useSceneAdvance(canContinue, () => dispatch({ type: 'continue' }))
+
+  useEffect(() => {
+    if (transition) return
+    const timer = setTimeout(() => setIntroReady(true), 1000)
+    return () => clearTimeout(timer)
+  }, [transition])
+
+  useEffect(() => {
+    const controls = input.current
+    function clear() {
+      controls.keys.clear()
+      controls.pointer = null
+      setMoving(false)
+    }
+    function keyDown(event) {
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.code)) return
+      event.preventDefault()
+      if (canMove) controls.keys.add(event.code)
+    }
+    function keyUp(event) {
+      controls.keys.delete(event.code)
+    }
+    function visibility() {
+      if (document.hidden) clear()
+    }
+    let frame
+    let previous
+    function tick(now) {
+      const elapsed = previous === undefined ? 0 : Math.min((now - previous) / 1000, .05)
+      previous = now
+      const direction = controls.pointer?.direction
+        ?? (Number(controls.keys.has('ArrowRight')) - Number(controls.keys.has('ArrowLeft')))
+      setMoving(Boolean(direction))
+      if (direction) dispatch({ type: 'move', dx: direction * elapsed * 90 })
+      frame = requestAnimationFrame(tick)
+    }
+    clear()
+    if (canMove) frame = requestAnimationFrame(tick)
+    window.addEventListener('keydown', keyDown)
+    window.addEventListener('keyup', keyUp)
+    window.addEventListener('blur', clear)
+    document.addEventListener('visibilitychange', visibility)
+    return () => {
+      cancelAnimationFrame(frame)
+      clear()
+      window.removeEventListener('keydown', keyDown)
+      window.removeEventListener('keyup', keyUp)
+      window.removeEventListener('blur', clear)
+      document.removeEventListener('visibilitychange', visibility)
+    }
+  }, [canMove])
+
+  function steer(event) {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const distance = event.clientX - (bounds.left + bounds.width / 2)
+    input.current.pointer = { id: event.pointerId, direction: Math.abs(distance) < 12 ? 0 : Math.sign(distance) }
+  }
+  function release(event) {
+    if (input.current.pointer?.id === event.pointerId) input.current.pointer = null
+  }
+
+  const text = state.narration ? flashbackText[state.narration]
+    : introReady && !state.walkedLeft ? flashbackText.intro : null
+  const atDoor = !sceneTransition && ['door', 'm2-door'].includes(state.mode)
+
+  return <section className="peter-flashback" aria-label="Peter's tech journey" {...handlers}>
+    <header className="flashback-title">A LONG WAY TO WEBMASTER</header>
+    <div className="flashback-stage" data-x={state.x} data-adult={state.adult} data-mode={state.mode}
+      onPointerDown={event => {
+        if (!canMove || !event.isPrimary || event.button !== 0) return
+        event.currentTarget.setPointerCapture(event.pointerId)
+        steer(event)
+      }}
+      onPointerMove={event => {
+        if (canMove && input.current.pointer?.id === event.pointerId) steer(event)
+      }}
+      onPointerUp={release}
+      onPointerCancel={release}
+      onLostPointerCapture={release}>
+      <PeterFlashbackArt state={state} moving={moving} />
+    </div>
+    <div className="flashback-dialogue" role="group" aria-label="Flashback story and choices">
+      {text && <div role="status"><PixelText text={text} /></div>}
+      {atDoor && <SceneChoices key={state.mode} choices={state.mode === 'm2-door'
+        ? ['A. Knock']
+        : ['A. Knock', 'B. Keep walking']}
+        onChoose={choice => dispatch({ type: choice === 0 ? 'knock' : 'skip' })} />}
+      {!sceneTransition && state.mode === 'pitch' && <SceneChoices key="pitch" choices={[
+        'A. I build websites. Do you need one?',
+        'B. Does your website need any improvements?',
+      ]} onChoose={() => dispatch({ type: 'pitch' })} />}
+      {!text && state.mode === 'reaction' && <PixelText text={state.meetings === 3
+        ? 'A client at last!'
+        : 'No work here. Keep heading left.'} />}
+      {!sceneTransition && <p className="flashback-hint">{canContinue
+        ? 'Tap or press Space to continue.'
+        : atDoor || state.mode === 'pitch'
+          ? 'Tap a choice, or use Up / Down and Space.'
+          : 'Hold to the left or right of Peter, or use Left / Right. Head left to explore.'}</p>}
+    </div>
+    {sceneTransition && <div key={sceneTransition} className={`scene-fade${sceneTransition === 'in' ? ' scene-reveal' : ''}`}
+      role="status" aria-label={sceneTransition === 'in' ? 'Fade in flashback' : 'Return to interview'}
+      onAnimationEnd={() => {
+        if (sceneTransition === 'in') setTransition(null)
+        else onComplete()
+      }} />}
+  </section>
+}

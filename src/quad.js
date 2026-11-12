@@ -19,6 +19,13 @@ export function reachedPhilipMeeting(position, professor) {
     && canStandInQuad(position.section, position.x, position.y)
 }
 
+export function reachedMattMeeting(position, professor) {
+  const top = quadSections.upperleft.rows.findIndex(row => row.length > 0)
+  return professor === 'matt' && position.section === 'upperleft'
+    && position.y <= top + 12
+    && canStandInQuad(position.section, position.x, position.y)
+}
+
 export function quadSusanScale(section) {
   return section === 'lowerleft' ? 1.25 : .5
 }

@@ -4,14 +4,15 @@ import { MAP_WIDTH, MAP_HEIGHT, professorLocations, clampMapCenter } from './cam
 import useSceneAdvance from './useSceneAdvance.js'
 import LocationArrow from './LocationArrow.jsx'
 
-export default function CampusMap({ professor, onContinue }) {
+export default function CampusMap({ professor, onContinue, fadeIn = false }) {
   const viewportRef = useRef(null)
   const centerRef = useRef(MAP_WIDTH / 2)
   const widthRef = useRef(MAP_HEIGHT * 9 / 16)
   const [view, setView] = useState({ center: MAP_WIDTH / 2, width: MAP_HEIGHT * 9 / 16 })
   const [error, setError] = useState(false)
+  const [revealing, setRevealing] = useState(fadeIn)
   const location = professorLocations[professor]
-  const advanceHandlers = useSceneAdvance(!error, onContinue)
+  const advanceHandlers = useSceneAdvance(!error && !revealing, onContinue)
 
   function pan(distance) {
     centerRef.current = clampMapCenter(centerRef.current + distance, widthRef.current)
@@ -31,6 +32,7 @@ export default function CampusMap({ professor, onContinue }) {
     observer.observe(viewport)
     function keyDown(event) {
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(event.code)) event.preventDefault()
+      if (revealing) return
       if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') keys.add(event.code)
     }
     function keyUp(event) { keys.delete(event.code) }
@@ -45,6 +47,7 @@ export default function CampusMap({ professor, onContinue }) {
       previousTime = undefined
     }
     function pointerDown(event) {
+      if (revealing) return
       if (!event.isPrimary || event.button !== 0 || gesture) return
       gesture = { id: event.pointerId, x: event.clientX }
       viewport.setPointerCapture(event.pointerId)
@@ -88,7 +91,7 @@ export default function CampusMap({ professor, onContinue }) {
       viewport.removeEventListener('pointercancel', pointerEnd)
       viewport.removeEventListener('lostpointercapture', pointerEnd)
     }
-  }, [])
+  }, [revealing])
 
   return (
     <section className="campus-map" ref={viewportRef} aria-label="Campus map" {...advanceHandlers}>
@@ -111,6 +114,8 @@ export default function CampusMap({ professor, onContinue }) {
       <div className="video-dialogue intro-prompt map-continue">
         <p>Tap the screen or press the spacebar to continue.</p>
       </div>
+      {revealing && <div className="scene-fade scene-reveal" role="status" aria-label="Fade in campus map"
+        onAnimationEnd={() => setRevealing(false)} />}
       {error && <p className="video-notice" role="alert">Unable to load the campus map. Please reload the page.</p>}
     </section>
   )

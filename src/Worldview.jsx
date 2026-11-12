@@ -3,7 +3,7 @@ import { WORLD_WIDTH, WORLD_HEIGHT, CAMERA_HEIGHT, CAMERA_WIDTH, MOVEMENT_KEYS, 
 import background from './assets/backgrounds/background1.png'
 import CharacterSprite from './CharacterSprite.jsx'
 import { characterImageUrls } from './characterSprites.js'
-import { startingQuadSusan, quadSections, moveQuadSusan, quadCamera, nearDazedStudent, quadSusanScale, reachedPhilipMeeting } from './quad.js'
+import { startingQuadSusan, quadSections, moveQuadSusan, quadCamera, nearDazedStudent, quadSusanScale, reachedPhilipMeeting, reachedMattMeeting } from './quad.js'
 import useSceneAdvance from './useSceneAdvance.js'
 import LocationArrow from './LocationArrow.jsx'
 import quadLowerLeft from './assets/scenes/quad-lowerleft.png'
@@ -12,7 +12,7 @@ import quadLowerRight from './assets/scenes/quad-lowerright.png'
 
 const quadBackgrounds = { lowerleft: quadLowerLeft, upperleft: quadUpperLeft, lowerright: quadLowerRight }
 
-export default function Worldview({ onEnterClassroom, quad = false, professor, onMeetPhilip }) {
+export default function Worldview({ onEnterClassroom, quad = false, professor, onMeetPhilip, onMeetMatt }) {
   const initialSusan = quad ? startingQuadSusan : startingSusan
   const [world, setWorld] = useState({
     susan: { position: initialSusan, moving: false, animationSeconds: 0 },
@@ -112,6 +112,11 @@ export default function Worldview({ onEnterClassroom, quad = false, professor, o
         onMeetPhilip()
         return
       }
+      if (quad && reachedMattMeeting(nextSusan, professor)) {
+        clearKeys()
+        onMeetMatt()
+        return
+      }
       if (quad && !studentEncountered.current && nearDazedStudent(nextSusan)) {
         studentEncountered.current = true
         dialoguePaused.current = true
@@ -163,7 +168,7 @@ export default function Worldview({ onEnterClassroom, quad = false, professor, o
       viewport.removeEventListener('pointercancel', pointerEnd)
       viewport.removeEventListener('lostpointercapture', pointerEnd)
     }
-  }, [onEnterClassroom, quad, professor, onMeetPhilip])
+  }, [onEnterClassroom, quad, professor, onMeetPhilip, onMeetMatt])
 
   const section = world.susan.position.section
   const area = quad ? quadSections[section] : { width: WORLD_WIDTH, height: WORLD_HEIGHT }

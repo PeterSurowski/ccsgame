@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canStandInQuad, moveQuadSusan, startingQuadSusan, quadCamera, quadSections, quadEntry, nearDazedStudent, quadSusanScale, reachedPhilipMeeting } from './quad.js'
+import { canStandInQuad, moveQuadSusan, startingQuadSusan, quadCamera, quadSections, quadEntry, nearDazedStudent, quadSusanScale, reachedPhilipMeeting, reachedMattMeeting } from './quad.js'
 import { cameraViewBox, CAMERA_HEIGHT, touchDirection } from './worldview.js'
 
 test('quad zoom is halved with Susan feet at 75% of the viewport and touch aligned', () => {
@@ -173,6 +173,37 @@ test('Philip endpoint is reachable from the lower-right entry through marked gro
       const next = moveQuadSusan(position, { dx, dy }, 1 / 60)
       const key = `${next.x},${next.y}`
       if (next.section === 'lowerright' && !visited.has(key)) {
+        visited.add(key)
+        queue.push(next)
+      }
+    }
+  }
+  assert.ok(reached)
+})
+
+test('Matt meeting requires Matt selection and the highest upper-left path endpoint', () => {
+  const endpoint = { section: 'upperleft', x: 254, y: 134 }
+  assert.equal(reachedMattMeeting(endpoint, 'matt'), true)
+  assert.equal(reachedMattMeeting(endpoint, 'philip'), false)
+  assert.equal(reachedMattMeeting(endpoint, null), false)
+  assert.equal(reachedMattMeeting({ ...endpoint, section: 'lowerleft' }, 'matt'), false)
+  assert.equal(reachedMattMeeting({ ...endpoint, x: 200 }, 'matt'), false)
+  assert.equal(reachedMattMeeting({ ...endpoint, y: 160 }, 'matt'), false)
+  assert.equal(reachedMattMeeting(quadEntry('upperleft'), 'matt'), false)
+})
+
+test('Matt endpoint is reachable from the upper-left entry using actual movement', () => {
+  const start = quadEntry('upperleft')
+  const queue = [start]
+  const visited = new Set([`${start.x},${start.y}`])
+  let reached = false
+  for (let i = 0; i < queue.length; i++) {
+    const position = queue[i]
+    if (reachedMattMeeting(position, 'matt')) { reached = true; break }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const next = moveQuadSusan(position, { dx, dy }, 1 / 60)
+      const key = `${next.x},${next.y}`
+      if (next.section === 'upperleft' && !visited.has(key)) {
         visited.add(key)
         queue.push(next)
       }

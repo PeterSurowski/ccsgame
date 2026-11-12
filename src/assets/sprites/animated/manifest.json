@@ -94,5 +94,53 @@
         "fps": 24
       }
     }
+  },
+  "peter": {
+    "idle": {
+      "up": {
+        "file": "peter-idle-up.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "down": {
+        "file": "peter-idle-down.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "left": {
+        "file": "peter-idle-left.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      },
+      "right": {
+        "file": "peter-idle-right.png",
+        "frames": 1,
+        "columns": 1,
+        "fps": 24
+      }
+    },
+    "walk": {
+      "up": {
+        "file": "peter-walk-up.png",
+        "frames": 26,
+        "columns": 8,
+        "fps": 24
+      },
+      "down": {
+        "file": "peter-walk-down.png",
+        "frames": 21,
+        "columns": 8,
+        "fps": 24
+      },
+      "side": {
+        "file": "peter-walk-side.png",
+        "frames": 27,
+        "columns": 8,
+        "fps": 24
+      }
+    }
   }
 }

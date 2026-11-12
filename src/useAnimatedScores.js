@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { playStartupChime } from './startupChime.js'
 import { playScoreTicks, scoreAtTime, SCORE_ANIMATION_MS } from './scoreAnimation.js'
 
 export default function useAnimatedScores(targets) {
@@ -58,6 +59,18 @@ export default function useAnimatedScores(targets) {
     return () => cancelAnimationFrame(frame)
   }, [targets])
 
-  return { scores, audioError,
+  const playStartup = useCallback(async () => {
+    try {
+      audioRef.current ??= new AudioContext()
+      const context = audioRef.current
+      await context.resume()
+      playStartupChime(context)
+    } catch (error) {
+      console.error('Resume startup sound failed:', error)
+      setAudioError('Startup sound is unavailable. Check your browser audio settings.')
+    }
+  }, [])
+
+  return { scores, audioError, playStartup,
     isAnimating: scores.some((score, index) => score.value !== targets[index].value) }
 }
