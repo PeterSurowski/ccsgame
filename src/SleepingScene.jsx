@@ -30,8 +30,12 @@ export default function SleepingScene({ onChoose }) {
 
   useEffect(() => {
     const video = videoRef.current
-    return () => video.pause()
-  }, [])
+    const frame = requestAnimationFrame(() => { play() })
+    return () => {
+      cancelAnimationFrame(frame)
+      video.pause()
+    }
+  }, [play])
 
   const finish = useCallback(() => {
     finishedRef.current = true
@@ -40,15 +44,15 @@ export default function SleepingScene({ onChoose }) {
   }, [])
   const advance = useCallback(() => {
     if (status === 'dialogue') setStatus('choices')
+    else if (status === 'loading' || status === 'start-required') play()
     else finish()
-  }, [status, finish])
+  }, [status, finish, play])
   const advanceHandlers = useSceneAdvance(status !== 'error' && status !== 'choices', advance)
   const ended = status === 'dialogue' || status === 'choices'
 
   return (
     <section className="opening-scene" aria-label="Sleeping students scene" {...advanceHandlers}>
       <video ref={videoRef} src={sleepingVideo} playsInline preload="auto"
-        onLoadedData={play}
         aria-label="Susan discovers the sleeping students"
         style={{ visibility: ended ? 'hidden' : 'visible' }}
         onPlaying={() => { if (!finishedRef.current) setStatus('playing') }}
@@ -65,10 +69,10 @@ export default function SleepingScene({ onChoose }) {
           setError('Unable to load the sleeping-students freeze frame. Please reload the page.')
           setStatus('error')
         }} />
-      {status === 'loading' && <p className="video-notice" role="status">Loading classroom video...</p>}
-      {status === 'start-required' && (
+      {(status === 'loading' || status === 'start-required') && (
         <div className="video-notice">
-          <p>Tap to start the classroom video with sound.</p>
+          <p>{status === 'loading' ? 'Loading classroom video...'
+            : 'Tap to start the classroom video with sound.'}</p>
           <button className="primary" onClick={play}>Play classroom video</button>
         </div>
       )}

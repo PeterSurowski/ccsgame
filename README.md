@@ -152,6 +152,9 @@ The classroom plays [CCSGame-scene-sleepingstudents-h264.mp4](src/assets/scenes/
 with sound, then displays [freezeframe-sleepingstudents.png](src/assets/scenes/freezeframe-sleepingstudents.png).
 The browser version uses H.264 video, AAC audio, and fast-start MP4 metadata;
 the original HEVC video is retained but is not shipped in the build.
+Playback is requested when the scene mounts rather than waiting for media
+preloading, which iOS may defer. A Play button remains available while loading
+or when autoplay is blocked; tap or Space in those states requests playback.
 Dialogue appears after the video ends or is skipped:
 
 > Susan: What's happening?
