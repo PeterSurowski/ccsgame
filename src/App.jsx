@@ -111,7 +111,7 @@ function Game({ onRestart }) {
       ) : mode === 'resume' ? (
         <main className="video-main">
           <ResumeScene onStartup={playStartup} scores={scoreTargets} scoresAnimating={isAnimating}
-            onEffect={showCandidateEffect} onRestore={restoreResumeScores} />
+            onEffect={showCandidateEffect} onRestore={restoreResumeScores} onRestart={onRestart} />
         </main>
       ) : (
         <main className="video-main">

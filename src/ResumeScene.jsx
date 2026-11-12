@@ -4,7 +4,7 @@ import susanFrame from './assets/scenes/CCSGame-SusanAtKeyboard.png'
 import ccsLogo from './CCSlogo.jpg'
 import ResumeChallenge from './ResumeChallenge.jsx'
 
-export default function ResumeScene({ onStartup, scores, scoresAnimating, onEffect, onRestore }) {
+export default function ResumeScene({ onStartup, scores, scoresAnimating, onEffect, onRestore, onRestart }) {
   const [entryScores] = useState(scores)
   const [attempt, setAttempt] = useState(0)
   const [status, setStatus] = useState('revealing')
@@ -22,7 +22,7 @@ export default function ResumeScene({ onStartup, scores, scoresAnimating, onEffe
   }
 
   if (status === 'playing') return <ResumeChallenge key={attempt} scores={scores} scoresAnimating={scoresAnimating}
-    onEffect={onEffect} onRetry={() => {
+    onEffect={onEffect} onRestart={onRestart} onRetry={() => {
       onRestore(entryScores)
       setAttempt(previous => previous + 1)
     }} />

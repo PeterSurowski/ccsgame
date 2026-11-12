@@ -22,7 +22,7 @@ export const mazeExits = {
     { x: 498, y: 223, to: 'B', dx: 1, dy: -1 },
   ],
   B: [
-    { x: 155, y: 498, to: 'E', dx: 0, dy: 1 },
+    { x: 155, y: 508, edge: 'bottom', to: 'E', dx: 0, dy: 1 },
     { x: 43, y: 225, to: 'A', dx: -1, dy: -1 }, { x: 12, y: 353, to: 'A', dx: -1, dy: 0 },
     { x: 470, y: 187, to: 'C', dx: 1, dy: -1 },
   ],
@@ -30,7 +30,7 @@ export const mazeExits = {
     { x: 16, y: 158, to: 'B', dx: -1, dy: -1 }, { x: 10, y: 288, to: 'B', dx: -1, dy: 0 },
     { x: 68, y: 438, to: 'F', dx: -1, dy: 1 }, { x: 395, y: 473, to: 'F', dx: 0, dy: 1 },
   ],
-  D: [{ x: 14, y: 220, to: 'A', dx: -1, dy: -1 }, { x: 310, y: 497, to: 'G', dx: 0, dy: 1 }],
+  D: [{ x: 14, y: 220, to: 'A', dx: -1, dy: -1 }, { x: 310, y: 508, edge: 'bottom', to: 'G', dx: 0, dy: 1 }],
   E: [
     { x: 498, y: 404, to: 'H', dx: 1, dy: 0 }, { x: 483, y: 157, to: 'H', dx: 1, dy: -1 },
     { x: 252, y: 498, to: 'D', dx: 0, dy: 1 },
@@ -40,13 +40,15 @@ export const mazeExits = {
     { x: 42, y: 161, to: 'D', dx: -1, dy: -1 }, { x: 10, y: 246, to: 'D', dx: -1, dy: 0 },
     { x: 199, y: 498, to: 'I', dx: 0, dy: 1 },
   ],
-  G: [{ x: 203, y: 498, to: 'H', dx: 0, dy: 1 }, { x: 497, y: 227, to: 'D', dx: 1, dy: 0 }],
+  G: [
+    { x: 203, y: 498, to: 'H', dx: 0, dy: 1 },
+    { x: 508, y: 223, edge: 'right', to: 'D', dx: 1, dy: 0 },
+    { x: 508, y: 274, edge: 'right', to: 'D', dx: 1, dy: 0 },
+  ],
   H: [{ x: 3, y: 340, to: 'G', dx: -1, dy: 0 }, { x: 498, y: 239, to: 'I', dx: 1, dy: -1 }],
   I: [
-    { x: 3, y: 430, end: { x: 3, y: 508 }, to: 'H', dx: -1, dy: 0 },
-    { x: 3, y: 508, end: { x: 162, y: 508 }, to: 'H', dx: 0, dy: 1 },
-    { x: 215, y: 465, to: 'H', dx: 0, dy: 1 },
-    { x: 435, y: 445, to: 'H', dx: 1, dy: 1 },
+    { x: 3, y: 430, edge: 'left', to: 'H', dx: -1, dy: 0 },
+    { x: 3, y: 508, edge: 'bottom', to: 'H', dx: 0, dy: 1 },
   ],
 }
 const defaultEntries = {
@@ -70,9 +72,9 @@ export const mazeNpcs = [
     text: ['Student: Admissions is beyond either lower path. Look for the line of students outside the door.'] },
   { id: 'E-guide', section: 'E', x: 224, y: 305, asset: 'student-alt-3',
     text: ['Student: The path to the left leads to the STEM building. From there, take its upper-right path toward athletics.'] },
-  { id: 'I-guide', section: 'I', x: 230, y: 315, asset: 'bench-2', width: 65,
+  { id: 'I-guide', section: 'I', x: 230, y: 265, asset: 'bench-2', width: 65,
     text: ['Student: These lower paths lead back to the courtyard with the big campus sign. Head left from there.'] },
-  { id: 'A-bench', section: 'A', x: 139, y: 248, asset: 'bench-0', width: 65,
+  { id: 'A-bench', section: 'A', x: 189, y: 248, asset: 'bench-0', width: 65,
     text: ['Student: Admissions is past the STEM and athletics buildings. Take the path on the right.'] },
   { id: 'F-bench', section: 'F', x: 154, y: 200, asset: 'bench-1', width: 60,
     text: ['Student: You made it! The Admissions door is beside the line of students.'] },
@@ -80,14 +82,15 @@ export const mazeNpcs = [
 
 export const mazePalms = [
   { section: 'H', x: 125, y: 331 },
-  { section: 'A', x: 275, y: 365 }, { section: 'B', x: 300, y: 271 },
-  { section: 'C', x: 256, y: 385 }, { section: 'D', x: 185, y: 455 },
+  { section: 'A', x: 300, y: 340 }, { section: 'B', x: 300, y: 246 },
+  { section: 'C', x: 281, y: 335 }, { section: 'D', x: 160, y: 455 },
   { section: 'E', x: 252, y: 412 }, { section: 'F', x: 458, y: 300 },
-  { section: 'G', x: 340, y: 319 }, { section: 'I', x: 170, y: 457 },
+  { section: 'G', x: 365, y: 294 }, { section: 'I', x: 170, y: 457 },
 ]
 
-export function mazeCharacterScale(y, height = mazeHeight) {
-  const depth = Math.max(0, Math.min(1, (y / height - .3) / .7))
+export function mazeCharacterScale(y, height = mazeHeight, depthRate = 1) {
+  const scaledY = y - (height - y) * (depthRate - 1)
+  const depth = Math.max(0, Math.min(1, (scaledY / height - .3) / .7))
   return .6 + 1.4 * depth
 }
 
@@ -127,17 +130,46 @@ const portalPoints = Object.fromEntries(Object.entries(mazeExits).map(([section,
   [section, exits.map(portal => ({ ...portal, point: nearestMazePoint(section, portal.x, portal.y),
     end: portal.end ? nearestMazePoint(section, portal.end.x, portal.end.y) : null }))]))
 
+export function slideMazeStep(position, direction, seconds, stand) {
+  const length = Math.hypot(direction.dx, direction.dy)
+  if (!length) return position
+  const distance = 180 * seconds
+  const dx = direction.dx / length, dy = direction.dy / length
+  if (stand(position.x + dx * distance, position.y + dy * distance)) {
+    return moveSusanDirection(position, direction, seconds, stand)
+  }
+  // Follow the closest forward-facing tangent without crossing the boundary.
+  for (const degrees of [15, 30, 45, 60, 75]) {
+    for (const sign of [-1, 1]) {
+      const angle = degrees * sign * Math.PI / 180
+      const sx = dx * Math.cos(angle) - dy * Math.sin(angle)
+      const sy = dx * Math.sin(angle) + dy * Math.cos(angle)
+      if (stand(position.x + sx * distance, position.y + sy * distance)) {
+        return { ...position, x: position.x + sx * distance, y: position.y + sy * distance,
+          facing: Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up') }
+      }
+    }
+  }
+  return moveSusanDirection(position, direction, seconds, stand)
+}
+
 export function moveMaze(position, direction, seconds) {
   let next = position
   const time = Math.min(Math.max(seconds, 0), .05)
   const steps = Math.max(1, Math.ceil(time * 360))
   for (let step = 0; step < steps; step += 1) {
-    next = moveSusanDirection(next, direction, time / steps,
+    next = slideMazeStep(next, direction, time / steps,
       (x, y) => mazeCanStand(x, y, position.section))
   }
   if (position.entry && Math.hypot(next.x - position.entry.x, next.y - position.entry.y) < 35) return next
   const armed = next.entry ? { ...next, entry: null } : next
   const exit = portalPoints[position.section].find(portal => {
+    if (portal.edge) {
+      const area = mazeSections[position.section]
+      const atEdge = portal.edge === 'bottom' ? next.y >= area.height - 4
+        : portal.edge === 'right' ? next.x >= area.width - 4 : next.x <= 4
+      return atEdge && direction.dx * portal.dx + direction.dy * portal.dy > 0
+    }
     const point = portal.point
     const end = portal.end || point
     const dx = end.x - point.x, dy = end.y - point.y

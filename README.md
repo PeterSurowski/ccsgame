@@ -1,5 +1,48 @@
 # CCS Game
 
+In the draw-to-protect sidescroller, bricks striking a student's visible head
+or torso kill that student and shatter, just like hits near the feet. A separate
+sensor follows each walking sprite without changing its ground movement.
+
+## Final hiring decision and endings
+
+Winning all three interview games unlocks Peter's final hiring question on the
+Susan-and-Peter interview image. Selecting a question alone does not count as a
+win. The final successful game fades directly into the hiring decision, regardless
+of completion order. The college maze reflection is shown only when other
+interview games remain.
+
+Hiring Peter fades into the happy-ending video, followed by the dialogue on
+ending images 4, 5, and 6. The supplied unnumbered happy-ending image has been
+renamed [CCSGame-happyEnding5.png](src/assets/scenes/CCSGame-happyEnding5.png).
+Tap or Space skips the video or advances each dialogue scene; a blocked video
+offers a Play button and media errors are displayed.
+
+Rejecting Peter leads to a generated university hallway. After the office exit
+and Peter's warning, tap repeatedly or repeatedly press Space to outrun the
+student horde. Holding Space does not count as repeated taps. Once the horde is
+offscreen, the chase continues for four more seconds before Peter falls, tips
+clockwise, and bounces twice. Susan runs ahead during his fall; the camera frames
+Peter at the far left and Susan at the far right. Choices pause the chase.
+Returning for Peter sends Susan left with each tap. The zombies stay offscreen
+until she reaches him, then enter from the left as Susan turns to run right
+again. Both choices end with Susan being
+caught after five more seconds, regardless of tapping speed. The horde then
+fully overtakes Susan in the hallway before fading to black and fading into
+the YOU LOSE screen. Restart input is enabled after the fade-in finishes.
+The supplied zombie moaning audio starts when the horde first enters view,
+loops through the chase, and fades to silence with the hallway fade-out.
+Blocked playback offers a Play zombie sounds button; audio errors are displayed.
+Failing to keep
+ahead during the initial run can also lead to the hallway loss image.
+
+The ending restart prompts reset the entire game, including scores and all
+interview progress, rather than retrying the resume challenge.
+
+Chase animation atlases are derived from the supplied running/horde videos with
+their baked-in white/checkerboard backgrounds removed. Regenerate them with
+`python scripts/prepare_chase_assets.py` (Pillow, NumPy, imageio-ffmpeg).
+
 During any video, a quick tap/click or nonrepeating Space skips playback to
 that video's ending freeze frame and dialogue/choices, stopping its audio.
 Dialogue requires a separate input to continue. The intro's first input still
@@ -314,14 +357,25 @@ real college. Peter starts in H beside the first student.
 Arrow keys or hold/drag steer Peter through the red-painted walkable paths.
 Only the clean backgrounds are displayed; the `MazeGame-?-Walkable` guides
 generate foot-safe collision data in [mazeWalkable.json](src/mazeWalkable.json).
+The updated B and G guides include their newly painted walking-space expansions.
 The camera stays within each image, at 1.25x the original maze zoom. Peter's
 base sprite is 75% of its previous world size. NPC cutouts match Peter's base
 height. All characters scale by their foot position in the full background:
 200% at the bottom, interpolating linearly to 60% at 70% up the image
 (30% from the top), remaining at 60% above that point.
+On D, Peter shrinks at twice the normal rate when moving upward, anchored at
+the same 200% bottom size and clamped to the same 60% minimum.
+The NPC on D is rendered at half its usual depth-scaled size.
 He starts far enough from the first
 student to approach him deliberately, with that student still in view.
-There is no corner title box. Palm bases sit in landscaped areas, not on paths.
+There is no corner title box. Palms use the requested image-relative placements.
+G's palm is shifted 50 source-image pixels right and up; D's is shifted
+50 source-image pixels left (25 world units per 50 image pixels).
+A's palm is shifted 50 pixels right/up, B's 50 pixels up, and C's
+50 pixels right/100 pixels up. The seated NPC on I is shifted 100 pixels up.
+Maze movement tries nearby forward directions when blocked, allowing Peter to
+slide along diagonal and jagged boundaries while keeping his feet walkable.
+This behavior is maze-specific; the earlier Worldview movement is unchanged.
 Image changes happen at path endpoints,
 with a re-entry guard to prevent immediate bouncing.
 Stationary, transparent cutouts of the supplied standing/seated students
@@ -339,22 +393,75 @@ videos, converted to the same transparent, foot-aligned sprite-sheet format
 as Susan. Originals are preserved.
 Timeout shows the requested loss/retry text;
 tap/Space resets the maze, timer, and conversations only.
-Completed A/B choices stay disabled on return, in either order. C remains
-disabled until its response is implemented. These games do not change scores.
+Completed A/B/C choices stay disabled on return, in any order.
+These games do not change scores.
 The authored exits are directed links, not inferred grid neighbors:
 A → D/B; B → E/A/C; C → B/F; D → G/A; E → H/D/B;
 F → D/I; G → H/D; H → G/I; I → H. A arrivals from D use the bottom-left
 path; B arrivals from A use the upper-left path. H's exit to G and arrivals
 from G use the path touching the left border, not the upper-left interior tip.
-All of I's outward paths return to H, including the right-hand and lower-center
-painted tips. Left and bottom border exits cover the full walkable edge rather
-than a single point.
+Both right-border paths in G lead to D across their full walkable edge spans.
+Only I's paths touching the left or bottom image border return to H.
+Its interior right-hand and lower-center tips do not trigger transitions.
+B's entire walkable bottom border leads to E; D's entire walkable bottom
+border leads to G. Border triggers allow for the collision mask's small safety
+inset, and cover every walkable part rather than one point.
 Routes, student placement and dialogue live in [mazeGame.js](src/mazeGame.js).
 To regenerate masks, student/palm cutouts and Peter sprites, run
 `python scripts\prepare_maze_assets.py` with the existing Pillow, NumPy and
 imageio-ffmpeg tools. The shared sprite preparation helpers now have a main
 guard so they can be reused without regenerating Susan or Chad.
 Result text, images, and transitions live in [ResumeResult.jsx](src/ResumeResult.jsx).
+
+### Question C: Draw to protect the students
+
+C shows Peter's "Because I love to teach!" reply on the interview image.
+Tap/Space fades to [platformer-background.jpg](src/platformer-background.jpg),
+his continuation, and translucent finger/mouse drawing instructions.
+Tap/Space begins the rescue game. The finger and mouse icons circle outside the
+dialogue panel, with no text below them. Ten students walk right automatically;
+the player cannot steer them. Five gaps/steps follow the supplied
+[reference](src/platformer-reference.png) and
+[solution guide](src/platformer-reference-withSolutions.png). A sixth intended
+stroke shelters the Kern Clock and RoboCop area from falling bricks.
+
+Mouse and touch draw physical lines. There is no stroke-count limit, but each
+stroke has a 336-source-pixel arc-length limit (168 world units), 40% shorter
+than the original limit. On release,
+Matter.js applies gravity and collisions; the lightweight strokes can settle,
+rotate, fall into gaps, and respond slightly to students' footsteps. Increased
+damping/friction, zero bounce, and sleeping keep settled lines stable. Lines
+receive extra damping once supported and nearly still; footsteps do not wake
+sleeping lines. Reaching the third platform shows Peter's
+"I want to help them avoid the many pitfalls I fell into." narration once,
+without pausing the students.
+At the Kern Clock, that narration is replaced by Peter's
+"With good skills, they can get a good job, and they'll be sheltered from many
+of the hardships we face in life." It triggers once per attempt when a student
+reaches the clock at walking level, without pausing gameplay.
+Strokes
+are not anchored or snapped to the intended solution. Bricks shatter on impact;
+Beam density is 20x the earlier setting and rotational inertia is tripled.
+Dense pointer samples are simplified before building collision shapes.
+New strokes intersecting ground/ink are lifted only enough to clear it (up to
+60 world units); if they cannot clear, a visible message asks the player to
+draw elsewhere. Shattered bricks do not apply a second rigid-body impact.
+students hit by bricks or falling into gaps use sideways still-image poses.
+
+The portrait viewport always follows the farthest-right student, including
+while drawing. There are no manual panning controls.
+The game pauses when the browser tab is hidden.
+Once all ten students have either exited or died, at least one survivor wins;
+all ten dead shows the retry message directly over the visible level background,
+and tap/Space restarts only this game.
+A win fades back to Susan and Peter, with C disabled.
+
+Logic, terrain tracing, physics, and stroke limit are in
+[studentRescue.js](src/studentRescue.js); rendering/input are in
+[StudentRescue.jsx](src/StudentRescue.jsx). The existing score header remains
+visible and unchanged. Supplied student stills and the walking video are
+converted to transparent five-character sheets by
+`python scripts\prepare_platformer_assets.py`, preserving original uploads.
 
 Candidate effects retain the previous balance. Budget, GPA, and Peter's effects are unchanged.
 Paige's Job Placement is -30 (limited professional experience), Barb's Engagement

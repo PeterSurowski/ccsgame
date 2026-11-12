@@ -4,7 +4,7 @@ import ResumeResult from './ResumeResult.jsx'
 
 const photos = import.meta.glob('./assets/scenes/ProfilePic-*', { eager: true, query: '?url', import: 'default' })
 
-export default function ResumeChallenge({ scores, scoresAnimating, onEffect, onRetry }) {
+export default function ResumeChallenge({ scores, scoresAnimating, onEffect, onRetry, onRestart }) {
   const [deck] = useState(() => shuffleCandidates(resumeCandidates))
   const [index, setIndex] = useState(0)
   const [hires, setHires] = useState([])
@@ -88,7 +88,7 @@ export default function ResumeChallenge({ scores, scoresAnimating, onEffect, onR
   }, [decide])
 
   if (['success', 'revolt'].includes(status)) {
-    return <ResumeResult won={status === 'success'} onRetry={onRetry} />
+    return <ResumeResult won={status === 'success'} onRetry={onRetry} onRestart={onRestart} />
   }
 
   return <section className="resume-challenge" aria-label="Resume Challenge">

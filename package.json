@@ -8,9 +8,10 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --test src/worldview.test.js src/campusMap.test.js src/quad.test.js src/philipDialogue.test.js src/scoreAnimation.test.js src/mattDialogue.test.js src/resumeCandidates.test.js src/peterFlashback.test.js src/mazeGame.test.js"
+    "test": "node --test src/worldview.test.js src/campusMap.test.js src/quad.test.js src/philipDialogue.test.js src/scoreAnimation.test.js src/mattDialogue.test.js src/resumeCandidates.test.js src/peterFlashback.test.js src/mazeGame.test.js src/studentRescue.test.js src/zombieChase.test.js"
   },
   "dependencies": {
+    "matter-js": "^0.20.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

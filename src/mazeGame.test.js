@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { admissionsDoor, completeInterviewChoice, createMaze, mazeCamera, mazeCanStand,
   mazeCharacterHeight, mazeCharacterScale, mazePeterScale, mazeEntry, mazeLayout,
-  mazeExits, mazeIntro, mazeNpcs, mazePalms, mazeReducer, mazeSections, mazeTime, moveMaze, nearestMazePoint } from './mazeGame.js'
+  mazeExits, mazeIntro, mazeNpcs, mazePalms, mazeReducer, mazeSections, mazeTime, moveMaze, nearestMazePoint, slideMazeStep } from './mazeGame.js'
 
 const tick = (state, seconds, direction = { dx: 0, dy: 0 }) => mazeReducer(state, { type: 'tick', seconds, direction })
 const advance = state => mazeReducer(state, { type: 'advance' })
@@ -34,6 +34,31 @@ test('H exits to G at the left-border path, not the upper path tip; returning us
   const arrival = mazeEntry('H', 'G')
   assert.ok(arrival.x < 40 && Math.abs(arrival.y - 340) < 10)
   assert.equal(moveMaze(arrival, { dx: -1, dy: 0 }, .01).section, 'H')
+})
+
+test('Peter shrinks twice as fast on D, retaining the bottom size and minimum size', () => {
+  assert.equal(mazeCharacterScale(512, 512, 2), 2)
+  for (const y of [500, 480, 450, 400]) {
+    const normalShrink = 2 - mazeCharacterScale(y)
+    assert.ok(Math.abs((2 - mazeCharacterScale(y, 512, 2)) - normalShrink * 2) < 1e-12)
+  }
+  assert.equal(mazeCharacterScale(300, 512, 2), .6)
+})
+
+test('both right-edge paths on G lead to D across their entire walkable width', () => {
+  const paths = [[223, 232], [274, 330]]
+  for (const [start, end] of paths) {
+    for (let y = start; y <= end; y++) {
+      assert.ok(mazeCanStand(508, y, 'G'))
+      const position = { section: 'G', x: 508, y, facing: 'right', entry: null }
+      assert.equal(moveMaze(position, { dx: 1, dy: 0 }, .01).section, 'D', `G right edge y=${y}`)
+    }
+  }
+})
+
+test('D and G palms move by the requested source-image pixel offsets', () => {
+  assert.deepEqual(mazePalms.find(palm => palm.section === 'D'), { section: 'D', x: 160, y: 455 })
+  assert.deepEqual(mazePalms.find(palm => palm.section === 'G'), { section: 'G', x: 365, y: 294 })
 })
 
 test('zoom is 25% closer in every section; first student is visible but outside conversation range', () => {
@@ -73,13 +98,53 @@ test('all tile I edge paths lead to H across their full walkable width', () => {
     [435, 445, { dx: 0, dy: 1 }],
   ]) {
     const point = nearestMazePoint('I', x, y)
-    check(point.x, point.y, direction)
+    assert.equal(moveMaze({ section: 'I', ...point, entry: null }, direction, .01).section, 'I')
   }
 })
 
-test('palm trunk bases stay off every painted walking path', () => {
-  for (const palm of mazePalms) assert.equal(mazeCanStand(palm.x, palm.y, palm.section), false,
+test('palm trunk bases stay off walking paths except the explicitly requested C placement', () => {
+  for (const palm of mazePalms.filter(palm => palm.section !== 'C')) assert.equal(mazeCanStand(palm.x, palm.y, palm.section), false,
     `Palm in ${palm.section} is on a walking path`)
+})
+
+test('all walkable bottom-edge positions of B and D transition, not just the old portal center', () => {
+  for (const [section, destination] of [['B', 'E'], ['D', 'G']]) {
+    const row = mazeSections[section].rows[508]
+    for (let i = 0; i < row.length; i += 2) {
+      for (let x = row[i]; x < row[i + 1]; x++) {
+        assert.equal(moveMaze({ section, x, y: 508, entry: null },
+          { dx: 0, dy: 1 }, .01).section, destination, `${section} bottom x=${x}`)
+      }
+    }
+  }
+})
+
+test('requested NPC and palm source-pixel offsets are applied', () => {
+  assert.equal(mazeNpcs.find(npc => npc.id === 'I-guide').y, 265)
+  for (const [section, x, y] of [['A', 300, 340], ['B', 300, 246], ['C', 281, 335]]) {
+    assert.deepEqual(mazePalms.find(palm => palm.section === section), { section, x, y })
+  }
+})
+
+test('boundary sliding follows diagonal walls and stays inside the walkable area', () => {
+  const stand = (x, y) => y >= x
+  let position = { x: 100, y: 100, facing: 'right' }
+  for (let i = 0; i < 100; i++) {
+    position = slideMazeStep(position, { dx: 1, dy: 0 }, 1 / 360, stand)
+    assert.ok(stand(position.x, position.y))
+  }
+  assert.ok(position.x > 120 && position.y > 120)
+  assert.deepEqual(slideMazeStep(position, { dx: 0, dy: 0 }, 1 / 360, stand), position)
+  const blocked = { x: 0, y: 0 }
+  assert.equal(slideMazeStep(blocked, { dx: 1, dy: 0 }, 1 / 360,
+    (x, y) => x === 0 && y === 0).x, 0)
+})
+
+test('updated B and G guide expansions are walkable', () => {
+  for (const [section, x, y] of [
+    ['B', 160, 480], ['B', 220, 480], ['B', 280, 480], ['B', 100, 500],
+    ['G', 180, 260], ['G', 200, 260],
+  ]) assert.ok(mazeCanStand(x, y, section), `${section}: added walking space at ${x},${y}`)
 })
 
 test('opening and first-student conversation pause time; timer glows for exactly three seconds', () => {

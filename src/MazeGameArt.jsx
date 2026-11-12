@@ -11,7 +11,7 @@ export default function MazeGameArt({ state, camera, elapsed, moving, onError })
   const section = state.position.section
   const area = mazeSections[section]
   const actors = mazeNpcs.filter(npc => npc.section === section).map(npc => {
-    const height = mazeCharacterHeight * mazeCharacterScale(npc.y, area.height)
+    const height = mazeCharacterHeight * mazeCharacterScale(npc.y, area.height) * (section === 'D' ? .5 : 1)
     return {
       y: npc.y, key: npc.id,
       element: <Cutout {...npc} width={height * (npc.width ? 1 : .4)} height={height} onError={onError} />,
@@ -19,7 +19,7 @@ export default function MazeGameArt({ state, camera, elapsed, moving, onError })
   })
   actors.push({ y: state.position.y, key: 'peter', element: <CharacterSprite name="peter" position={state.position}
     moving={moving} animationSeconds={elapsed}
-    scale={mazePeterScale * mazeCharacterScale(state.position.y, area.height)} /> })
+    scale={mazePeterScale * mazeCharacterScale(state.position.y, area.height, section === 'D' ? 2 : 1)} /> })
   if (section === 'F') actors.push({ y: 268, key: 'line',
     element: <Cutout asset="line" x={304} y={268}
       width={mazeCharacterHeight * mazeCharacterScale(268, area.height) * 953 / 405}
