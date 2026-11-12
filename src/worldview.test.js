@@ -135,8 +135,12 @@ test('walking advances at video frame rate and wraps each extracted cycle', () =
 test('the classroom trigger is reachable by movement, not Susan spawn or Chad waiting spot', () => {
   assert.equal(reachedClassroomDoor(startingSusan), false)
   assert.equal(reachedClassroomDoor(chadRoute.at(-1)), false)
-  assert.equal(reachedClassroomDoor({ x: 376, y: 190 }), false)
-  assert.equal(reachedClassroomDoor({ x: 410, y: 150 }), false)
+  for (const point of [{ x: 376, y: 190 }, { x: 410, y: 150 }, { x: 355, y: 120 }, { x: 425, y: 195 }]) {
+    assert.equal(reachedClassroomDoor(point), true)
+  }
+  for (const point of [{ x: 354, y: 150 }, { x: 426, y: 150 }, { x: 380, y: 119 }, { x: 380, y: 196 }]) {
+    assert.equal(reachedClassroomDoor(point), false)
+  }
   let position = startingSusan
   for (let i = 0; i < 120 && !reachedClassroomDoor(position); i++) {
     position = moveSusan(position, new Set(['ArrowRight']), 1 / 60)

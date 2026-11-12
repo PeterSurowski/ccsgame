@@ -70,10 +70,9 @@ export default function SleepingScene({ onChoose }) {
           setStatus('error')
         }} />
       {(status === 'loading' || status === 'start-required') && (
-        <div className="video-notice">
+        <div className="video-notice" role="status">
           <p>{status === 'loading' ? 'Loading classroom video...'
-            : 'Tap to start the classroom video with sound.'}</p>
-          <button className="primary" onClick={play}>Play classroom video</button>
+            : 'Tap the screen or press Space to start the classroom video with sound.'}</p>
         </div>
       )}
       {status === 'error' && <p className="video-notice" role="alert">{error}</p>}

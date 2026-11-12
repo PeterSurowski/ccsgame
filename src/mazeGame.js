@@ -1,4 +1,5 @@
 import { moveSusanDirection } from './worldview.js'
+export { slideMovementStep as slideMazeStep } from './worldview.js'
 import walkable from './mazeWalkable.json' with { type: 'json' }
 
 export const mazeSections = walkable
@@ -74,7 +75,7 @@ export const mazeNpcs = [
     text: ['Student: The path to the left leads to the STEM building. From there, take its upper-right path toward athletics.'] },
   { id: 'I-guide', section: 'I', x: 230, y: 265, asset: 'bench-2', width: 65,
     text: ['Student: These lower paths lead back to the courtyard with the big campus sign. Head left from there.'] },
-  { id: 'A-bench', section: 'A', x: 189, y: 248, asset: 'bench-0', width: 65,
+  { id: 'A-bench', section: 'A', x: 214, y: 248, asset: 'bench-0', width: 65,
     text: ['Student: Admissions is past the STEM and athletics buildings. Take the path on the right.'] },
   { id: 'F-bench', section: 'F', x: 154, y: 200, asset: 'bench-1', width: 60,
     text: ['Student: You made it! The Admissions door is beside the line of students.'] },
@@ -130,44 +131,16 @@ const portalPoints = Object.fromEntries(Object.entries(mazeExits).map(([section,
   [section, exits.map(portal => ({ ...portal, point: nearestMazePoint(section, portal.x, portal.y),
     end: portal.end ? nearestMazePoint(section, portal.end.x, portal.end.y) : null }))]))
 
-export function slideMazeStep(position, direction, seconds, stand) {
-  const length = Math.hypot(direction.dx, direction.dy)
-  if (!length) return position
-  const distance = 180 * seconds
-  const dx = direction.dx / length, dy = direction.dy / length
-  if (stand(position.x + dx * distance, position.y + dy * distance)) {
-    return moveSusanDirection(position, direction, seconds, stand)
-  }
-  // Follow the closest forward-facing tangent without crossing the boundary.
-  for (const degrees of [15, 30, 45, 60, 75]) {
-    for (const sign of [-1, 1]) {
-      const angle = degrees * sign * Math.PI / 180
-      const sx = dx * Math.cos(angle) - dy * Math.sin(angle)
-      const sy = dx * Math.sin(angle) + dy * Math.cos(angle)
-      if (stand(position.x + sx * distance, position.y + sy * distance)) {
-        return { ...position, x: position.x + sx * distance, y: position.y + sy * distance,
-          facing: Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up') }
-      }
-    }
-  }
-  return moveSusanDirection(position, direction, seconds, stand)
-}
-
 export function moveMaze(position, direction, seconds) {
-  let next = position
-  const time = Math.min(Math.max(seconds, 0), .05)
-  const steps = Math.max(1, Math.ceil(time * 360))
-  for (let step = 0; step < steps; step += 1) {
-    next = slideMazeStep(next, direction, time / steps,
-      (x, y) => mazeCanStand(x, y, position.section))
-  }
+  const next = moveSusanDirection(position, direction, seconds,
+    (x, y) => mazeCanStand(x, y, position.section))
   if (position.entry && Math.hypot(next.x - position.entry.x, next.y - position.entry.y) < 35) return next
   const armed = next.entry ? { ...next, entry: null } : next
   const exit = portalPoints[position.section].find(portal => {
     if (portal.edge) {
       const area = mazeSections[position.section]
       const atEdge = portal.edge === 'bottom' ? next.y >= area.height - 4
-        : portal.edge === 'right' ? next.x >= area.width - 4 : next.x <= 4
+        : portal.edge === 'right' ? next.x >= area.width - 54 : next.x <= 4
       return atEdge && direction.dx * portal.dx + direction.dy * portal.dy > 0
     }
     const point = portal.point
@@ -176,7 +149,7 @@ export function moveMaze(position, direction, seconds) {
     const lengthSquared = dx * dx + dy * dy
     const t = lengthSquared ? Math.max(0, Math.min(1,
       ((next.x - point.x) * dx + (next.y - point.y) * dy) / lengthSquared)) : 0
-    return Math.hypot(next.x - point.x - dx * t, next.y - point.y - dy * t) <= 20
+    return Math.hypot(next.x - point.x - dx * t, next.y - point.y - dy * t) <= (portal.dx > 0 ? 70 : 20)
       && direction.dx * portal.dx + direction.dy * portal.dy > 0
   })
   return exit ? mazeEntry(exit.to, position.section) : armed

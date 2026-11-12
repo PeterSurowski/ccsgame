@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import useSceneAdvance from './useSceneAdvance.js'
 import { addRescueStroke, createRescue, disposeRescue, extendStroke, rescueHeight,
-  rescueStrokePoints, rescueWidth, strokeLimit, studentCount, updateRescue } from './studentRescue.js'
+  rescueStrokePoints, rescueWidth, updateRescue } from './studentRescue.js'
 import background from './platformer-background.jpg'
 import idle from './assets/platformer/students-idle.png'
 import walking from './assets/platformer/students-walking.png'
@@ -135,14 +135,9 @@ function RescueAttempt({ onComplete, onRetry }) {
           fill="#b46b47" opacity={fragment.life / .65} />)}
         {game?.students.filter(student => student.state !== 'saved').map(student =>
           <Student key={student.body.id} student={student} time={game.time} />)}
-        <text x="982" y="310" textAnchor="end" className="rescue-exit">REAL WORLD →</text>
       </svg>
     </div>
     {phase === 'playing' && <>
-      <div className="rescue-hud" aria-live="polite">
-        <span>Safe {game?.saved || 0}/{studentCount}</span><span>Lost {game?.dead || 0}</span>
-        <span>{draft ? 'Drawing…' : `Max ${strokeLimit * 2}px per line`}</span>
-      </div>
       {drawingNotice && <p className="rescue-narration" role="status">{drawingNotice}</p>}
       {!drawingNotice && (game?.kernClockReached || game?.thirdPlatformReached) && <p
         className="rescue-narration" role="status">

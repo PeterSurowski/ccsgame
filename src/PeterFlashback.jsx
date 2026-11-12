@@ -6,6 +6,22 @@ import PeterFlashbackArt from './PeterFlashbackArt.jsx'
 import { createFlashback, flashbackReducer, flashbackText } from './peterFlashback.js'
 import './PeterFlashback.css'
 
+function MovementHints() {
+  return <div className="flashback-movement-hints" role="img"
+    aria-label="Hold the left or right side of the screen, or use the left and right arrow keys">
+    {[-1, 1].map(direction => <svg key={direction} className={direction < 0 ? 'flashback-left-hint' : 'flashback-right-hint'}
+      viewBox="0 0 80 125" aria-hidden="true">
+      <circle className="flashback-touch-ring" cx="35" cy="24" r="15" />
+      <g className="flashback-touch-finger">
+        <path d="M28 66 16 48 Q13 42 18 40 L28 47 V24 Q28 18 34 18 Q40 18 40 24 V42 Q45 37 50 42 Q56 39 61 46 L66 50 V67 Q64 77 57 81 H38Z" />
+      </g>
+      <rect x="14" y="91" width="52" height="30" rx="5" fill="#ffffff22" />
+      <path d={direction < 0 ? 'M53 106 H27 M37 97 L27 106 L37 115' : 'M27 106 H53 M43 97 L53 106 L43 115'}
+        fill="none" strokeWidth="3" />
+    </svg>)}
+  </div>
+}
+
 export default function PeterFlashback({ onComplete }) {
   const [state, dispatch] = useReducer(flashbackReducer, undefined, createFlashback)
   const [transition, setTransition] = useState('in')
@@ -96,6 +112,7 @@ export default function PeterFlashback({ onComplete }) {
       onPointerCancel={release}
       onLostPointerCapture={release}>
       <PeterFlashbackArt state={state} moving={moving} />
+      {canMove && <MovementHints />}
     </div>
     <div className="flashback-dialogue" role="group" aria-label="Flashback story and choices">
       {text && <div role="status"><PixelText text={text} /></div>}
@@ -112,11 +129,6 @@ export default function PeterFlashback({ onComplete }) {
         : state.meetings === 2
         ? 'The legwork was grueling , and the rejection was brutal. But...'
         : ''} />}
-      {!sceneTransition && <p className="flashback-hint">{canContinue
-        ? 'Tap or press Space to continue.'
-        : atDoor || state.mode === 'pitch'
-          ? 'Tap a choice, or use Up / Down and Space.'
-          : 'Hold to the left or right of Peter, or use Left / Right. Head left to explore.'}</p>}
     </div>
     {sceneTransition && <div key={sceneTransition} className={`scene-fade${sceneTransition === 'in' ? ' scene-reveal' : ''}`}
       role="status" aria-label={sceneTransition === 'in' ? 'Fade in flashback' : 'Return to interview'}

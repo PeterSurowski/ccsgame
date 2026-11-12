@@ -23,8 +23,8 @@ export const chadRoute = [[690, 330], [700, 285]]
   .map(([x, y]) => ({ x: x * BACKGROUND_SCALE, y: y * BACKGROUND_SCALE }))
 
 export function reachedClassroomDoor({ x, y }) {
-  return x >= 750 * BACKGROUND_SCALE && x <= 800 * BACKGROUND_SCALE
-    && y >= 260 * BACKGROUND_SCALE && y <= 330 * BACKGROUND_SCALE
+  return x >= 710 * BACKGROUND_SCALE && x <= 850 * BACKGROUND_SCALE
+    && y >= 240 * BACKGROUND_SCALE && y <= 390 * BACKGROUND_SCALE
 }
 
 // Foot-level floor boundary traced in background1.png's native pixel coordinates.
@@ -55,6 +55,39 @@ export function moveSusan(position, keys, seconds) {
 }
 
 export function moveSusanDirection(position, { dx, dy }, seconds, stand = canStand) {
+  const time = Math.min(Math.max(seconds, 0), .05)
+  const steps = Math.max(1, Math.ceil(time * 360))
+  let next = position
+  for (let step = 0; step < steps; step += 1) {
+    next = slideMovementStep(next, { dx, dy }, time / steps, stand)
+  }
+  return next
+}
+
+export function slideMovementStep(position, direction, seconds, stand) {
+  const length = Math.hypot(direction.dx, direction.dy)
+  if (!length) return position
+  const distance = 180 * Math.min(Math.max(seconds, 0), .05)
+  const dx = direction.dx / length, dy = direction.dy / length
+  if (stand(position.x + dx * distance, position.y + dy * distance)) {
+    return moveAxisStep(position, direction, seconds, stand)
+  }
+  // Follow the closest forward-facing tangent without crossing the boundary.
+  for (const degrees of [15, 30, 45, 60, 75]) {
+    for (const sign of [-1, 1]) {
+      const angle = degrees * sign * Math.PI / 180
+      const sx = dx * Math.cos(angle) - dy * Math.sin(angle)
+      const sy = dx * Math.sin(angle) + dy * Math.cos(angle)
+      if (stand(position.x + sx * distance, position.y + sy * distance)) {
+        return { ...position, x: position.x + sx * distance, y: position.y + sy * distance,
+          facing: Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up') }
+      }
+    }
+  }
+  return moveAxisStep(position, direction, seconds, stand)
+}
+
+function moveAxisStep(position, { dx, dy }, seconds, stand) {
   const length = Math.hypot(dx, dy)
   if (!length) return position
   const distance = 180 * Math.min(Math.max(seconds, 0), 0.05)

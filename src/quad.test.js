@@ -171,7 +171,7 @@ test('Philip endpoint is reachable from the lower-right entry through marked gro
     if (reachedPhilipMeeting(position, 'philip')) { reached = true; break }
     for (const [dx, dy] of [[3, 0], [-3, 0], [0, 3], [0, -3]]) {
       const next = moveQuadSusan(position, { dx, dy }, 1 / 60)
-      const key = `${next.x},${next.y}`
+      const key = `${Math.round(next.x)},${Math.round(next.y)}`
       if (next.section === 'lowerright' && !visited.has(key)) {
         visited.add(key)
         queue.push(next)
@@ -202,7 +202,7 @@ test('Matt endpoint is reachable from the upper-left entry using actual movement
     if (reachedMattMeeting(position, 'matt')) { reached = true; break }
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const next = moveQuadSusan(position, { dx, dy }, 1 / 60)
-      const key = `${next.x},${next.y}`
+      const key = `${Math.round(next.x)},${Math.round(next.y)}`
       if (next.section === 'upperleft' && !visited.has(key)) {
         visited.add(key)
         queue.push(next)

@@ -3,8 +3,6 @@
 .rescue-map { display: block; width: 100%; height: 100%; touch-action: none; }
 .rescue-ink { stroke: #fbe013; stroke-width: 5; fill: none; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px #222); pointer-events: none; }
 .rescue-draft { stroke: #fff; opacity: .7; }
-.rescue-exit { font: bold 10px sans-serif; fill: #fff; stroke: #263c36; paint-order: stroke; stroke-width: 3px; }
-.rescue-hud { position: absolute; top: 2cqw; left: 2cqw; right: 2cqw; display: flex; justify-content: space-between; gap: 1cqw; padding: 2cqw; color: #fff; background: #172936df; font-size: 2.8cqw; pointer-events: none; }
 .rescue-intro { position: absolute; inset: auto 3cqw 31cqw; padding: 4cqw; background: #172936ee; color: white; text-align: center; border-radius: 2cqw; pointer-events: none; }
 .rescue-intro p { font-size: 3.2cqw; line-height: 1.4; margin-bottom: 2cqw; }
 .rescue-intro h1 { font-size: 5cqw; margin-bottom: 2cqw; color: #fbe013; }

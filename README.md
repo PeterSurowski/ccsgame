@@ -153,8 +153,8 @@ with sound, then displays [freezeframe-sleepingstudents.png](src/assets/scenes/f
 The browser version uses H.264 video, AAC audio, and fast-start MP4 metadata;
 the original HEVC video is retained but is not shipped in the build.
 Playback is requested when the scene mounts rather than waiting for media
-preloading, which iOS may defer. A Play button remains available while loading
-or when autoplay is blocked; tap or Space in those states requests playback.
+preloading, which iOS may defer. There is no separate classroom Play button;
+tap or Space while loading or when autoplay is blocked requests playback.
 Dialogue appears after the video ends or is skipped:
 
 > Susan: What's happening?
@@ -173,7 +173,8 @@ The freeze frame stays behind the choices. Tap or click a choice to confirm it.
 The first Up or Down arrow highlights A in the score header's yellow; subsequent
 Up/Down presses select A/B, and Space confirms the highlighted choice.
 Space alone does not choose an option before one is highlighted.
-Playback and asset errors are visible; blocked autoplay offers a Play button.
+Playback and asset errors are visible; blocked classroom autoplay shows a
+tap-or-Space prompt.
 
 ## Campus map
 

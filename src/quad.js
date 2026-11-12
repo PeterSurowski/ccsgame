@@ -65,7 +65,7 @@ export function moveQuadSusan(position, direction, seconds) {
     if ((direction.dx < 0 && next.x <= margin) || (direction.dy < 0 && next.y <= margin)) {
       return quadEntry('upperleft')
     }
-    if (direction.dx > 0 && next.x >= area.width - margin) {
+    if (direction.dx > 0 && next.x >= area.width - margin - 50) {
       return quadEntry('lowerright')
     }
   } else {
