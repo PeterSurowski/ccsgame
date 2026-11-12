@@ -79,7 +79,7 @@ export const mazeNpcs = [
 ]
 
 export const mazePalms = [
-  { section: 'H', x: 125, y: 331 }, { section: 'H', x: 300, y: 260 },
+  { section: 'H', x: 125, y: 331 },
   { section: 'A', x: 275, y: 365 }, { section: 'B', x: 300, y: 271 },
   { section: 'C', x: 256, y: 385 }, { section: 'D', x: 185, y: 455 },
   { section: 'E', x: 252, y: 412 }, { section: 'F', x: 458, y: 300 },

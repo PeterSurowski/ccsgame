@@ -108,8 +108,10 @@ export default function PeterFlashback({ onComplete }) {
         'B. Does your website need any improvements?',
       ]} onChoose={() => dispatch({ type: 'pitch' })} />}
       {!text && state.mode === 'reaction' && <PixelText text={state.meetings === 3
-        ? 'A client at last!'
-        : 'No work here. Keep heading left.'} />}
+        ? 'It worked! I built a freelance business that supported my family for years.'
+        : state.meetings === 2
+        ? 'The legwork was grueling , and the rejection was brutal. But...'
+        : ''} />}
       {!sceneTransition && <p className="flashback-hint">{canContinue
         ? 'Tap or press Space to continue.'
         : atDoor || state.mode === 'pitch'

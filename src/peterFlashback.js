@@ -1,10 +1,10 @@
 export const flashbackText = {
   intro: "Peter: I loved that game. I wanted to create something just like it. But my parents were poor, we didn't have a computer.",
-  computer: 'Peter: Then I found an old, out-of-date Commodore 64 at a yard sale. I spent all my savings on it, took it home, and started reading the instruction manual. I learned how to learn the BASIC programming language from that manual.',
+  computer: 'Peter: Then I found an old, out-of-date Commodore 64 at a yard sale. I spent all my savings on it, took it home, and started reading the instruction manual. I learned how to write the "BASIC" programming language from that manual.',
   adult: 'Peter: Tech was my hobby into my adulthood. But then the unforeseeable happened.',
-  family: "Peter: I got married and had a child far too young. I was barely done with community college when I had to become a provider. I didn't have many skills at that age, but I knew how to build websites. So... I hit the streets.",
-  rejection: 'Peter: I went door to door, office to office, warehouse to warehouse trying to find clients. The legwork was insane, and the rejection was brutal. But...',
-  m2: 'Peter: That\'s exactly how I met the publisher of M2Media. It was a magazine company, published trade journals. Turns out they were looking for a "webmaster." This was my first full-time job in tech.',
+  family: "Peter: I got married and had a child far too young. I was barely done with community college and managing a guitar store making barely minimum wage, and suddenly I had to become a provider. I didn't have many skills at that age, but I knew how to build websites. So... I hit the streets.",
+  rejection: 'Peter: I went door to door, office to office, warehouse to warehouse trying to find clients.',
+  m2: 'Peter: That\'s exactly how I met the publisher of M2Media. It was a magazine company that published trade journals. Turns out they were looking for a "webmaster." This was my first full-time job in tech.',
 }
 
 export function createFlashback() {
