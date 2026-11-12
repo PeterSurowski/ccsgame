@@ -1,5 +1,12 @@
 # CCS Game
 
+## Publishing
+
+The site uses the custom domain `ccsgame.surowski.com`, so Vite's `base` is `/`,
+not a repository-name path. `public/CNAME` preserves the custom domain in each
+build. To publish manually, run `npm run build`, then, only after it succeeds,
+`npx gh-pages -d dist` (or use the SSH remote override if HTTPS uploads fail).
+
 In the draw-to-protect sidescroller, bricks striking a student's visible head
 or torso kill that student and shatter, just like hits near the feet. A separate
 sensor follows each walking sprite without changing its ground movement.
@@ -141,8 +148,10 @@ Reload to restart. Keyboard and touch movement clear on focus loss.
 
 ## Sleeping students scene
 
-The classroom plays [CCSGame-scene-sleepingstudents.mp4](src/assets/scenes/CCSGame-scene-sleepingstudents.mp4)
+The classroom plays [CCSGame-scene-sleepingstudents-h264.mp4](src/assets/scenes/CCSGame-scene-sleepingstudents-h264.mp4)
 with sound, then displays [freezeframe-sleepingstudents.png](src/assets/scenes/freezeframe-sleepingstudents.png).
+The browser version uses H.264 video, AAC audio, and fast-start MP4 metadata;
+the original HEVC video is retained but is not shipped in the build.
 Dialogue appears after the video ends or is skipped:
 
 > Susan: What's happening?

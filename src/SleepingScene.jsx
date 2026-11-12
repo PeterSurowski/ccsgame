@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import sleepingVideo from './assets/scenes/CCSGame-scene-sleepingstudents.mp4'
+import sleepingVideo from './assets/scenes/CCSGame-scene-sleepingstudents-h264.mp4'
 import freezeFrame from './assets/scenes/freezeframe-sleepingstudents.png'
 import useSceneAdvance from './useSceneAdvance.js'
 import SceneChoices from './SceneChoices.jsx'
