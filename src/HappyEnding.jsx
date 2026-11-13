@@ -54,8 +54,7 @@ export default function HappyEnding({ onRestart }) {
       </> : <>
         <p>Susan: Yaaaaaaaaaah!</p>
         <h2>You stopped the student revolt!</h2>
-        <h2>But the professors, on the other hand?</h2>
-        <h3>We'll leave that for another game.</h3>
+        <p>But the professors, on the other hand? We'll leave that for another game.</p>
         <h1>YOU WON!</h1>
         <small>Hit spacebar or tap to start over</small>
       </>}
