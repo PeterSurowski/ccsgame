@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENES = ROOT / "src" / "assets" / "scenes"
@@ -16,6 +16,13 @@ def prepare(section):
     width, height = (dimension // 2 for dimension in reference.size)
     pixels = np.asarray(reference.resize((width, height), Image.Resampling.NEAREST))
     red = (pixels[:, :, 0] >= 220) & (pixels[:, :, 1] <= 45) & (pixels[:, :, 2] <= 45)
+    if section == "upperleft":
+        # Paint specks and narrow cracks otherwise grow into obstacles during erosion.
+        mask = Image.fromarray(red.astype(np.uint8) * 255)
+        red = np.asarray(mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))) > 0
+        exterior = Image.fromarray(np.pad(red.astype(np.uint8) * 255, 1)).copy()
+        ImageDraw.floodfill(exterior, (0, 0), 128)
+        red = np.asarray(exterior)[1:-1, 1:-1] != 128
     padded = np.pad(red, 13, constant_values=False)
     safe = red.copy()
     for dy in range(-13, 14):

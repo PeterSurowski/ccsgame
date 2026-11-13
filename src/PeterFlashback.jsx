@@ -112,7 +112,7 @@ export default function PeterFlashback({ onComplete }) {
       onPointerCancel={release}
       onLostPointerCapture={release}>
       <PeterFlashbackArt state={state} moving={moving} />
-      {canMove && <MovementHints />}
+      {canMove && !state.hasMoved && <MovementHints />}
     </div>
     <div className="flashback-dialogue" role="group" aria-label="Flashback story and choices">
       {text && <div role="status"><PixelText text={text} /></div>}

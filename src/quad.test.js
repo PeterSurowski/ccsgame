@@ -111,6 +111,14 @@ test('quad movement preserves normalized speed, neutral input, and blocks obstac
   assert.ok(canStandInQuad(position.section, position.x, position.y))
 })
 
+test('lower-left right exit triggers 50 world units earlier, only when heading right', () => {
+  const position = { section: 'lowerleft', x: 560, y: 290, facing: 'right' }
+  assert.ok(canStandInQuad(position.section, position.x, position.y))
+  assert.equal(moveQuadSusan(position, { dx: 1, dy: 0 }, 0).section, 'lowerright')
+  assert.equal(moveQuadSusan({ ...position, x: 559 }, { dx: 1, dy: 0 }, 0).section, 'lowerleft')
+  assert.equal(moveQuadSusan(position, { dx: -1, dy: 0 }, 1 / 60).section, 'lowerleft')
+})
+
 test('walkable routes connect the spawn to both sections and their return exits', () => {
   for (const [start, goal] of [
     [startingQuadSusan, p => p.x >= 610],
@@ -190,6 +198,27 @@ test('Matt meeting requires Matt selection and the highest upper-left path endpo
   assert.equal(reachedMattMeeting({ ...endpoint, x: 200 }, 'matt'), false)
   assert.equal(reachedMattMeeting({ ...endpoint, y: 160 }, 'matt'), false)
   assert.equal(reachedMattMeeting(quadEntry('upperleft'), 'matt'), false)
+})
+
+test('upper-left middle walkway has no internal collision pockets', () => {
+  for (let y = 300; y <= 340; y++) {
+    const row = quadSections.upperleft.rows[y]
+    assert.equal(row.length, 2, `Middle walkway split at y=${y}`)
+    for (let x = row[0]; x < row[1]; x++) {
+      assert.ok(canStandInQuad('upperleft', x, y))
+    }
+  }
+  let position = { section: 'upperleft', x: 353, y: 327, facing: 'left', returnArmed: true }
+  for (let frame = 0; frame < 18; frame++) {
+    const next = moveQuadSusan(position, { dx: -1, dy: 0 }, 1 / 60)
+    assert.ok(Math.abs(next.x - position.x + 3) < 1e-9)
+    assert.equal(next.y, 327)
+    position = next
+  }
+  assert.equal(position.x, 299)
+  for (const [x, y] of [[170, 285], [280, 235], [350, 310], [350, 260]]) {
+    assert.equal(canStandInQuad('upperleft', x, y), false, `Off-path terrain at ${x},${y}`)
+  }
 })
 
 test('Matt endpoint is reachable from the upper-left entry using actual movement', () => {

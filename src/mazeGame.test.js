@@ -61,6 +61,21 @@ test('D and G palms move by the requested source-image pixel offsets', () => {
   assert.deepEqual(mazePalms.find(palm => palm.section === 'G'), { section: 'G', x: 365, y: 294 })
 })
 
+test('right-facing maze exits accept approaches 50 world units before their old triggers', () => {
+  for (const [section, exits] of Object.entries(mazeExits)) {
+    for (const exit of exits.filter(portal => portal.dx > 0)) {
+      const point = nearestMazePoint(section, exit.x - 50, exit.y)
+      const position = { section, ...point, entry: null }
+      assert.equal(moveMaze(position, { dx: exit.dx, dy: exit.dy }, .001).section, exit.to)
+      assert.equal(moveMaze(position, { dx: 0, dy: 0 }, .001).section, section)
+    }
+  }
+  const position = { section: 'G', x: 458, y: 223, entry: null }
+  assert.equal(moveMaze(position, { dx: 1, dy: 0 }, 0).section, 'D')
+  assert.equal(moveMaze({ ...position, x: 457 }, { dx: 1, dy: 0 }, 0).section, 'G')
+  assert.equal(moveMaze({ ...position, entry: { x: 458, y: 223 } }, { dx: 1, dy: 0 }, .01).section, 'G')
+})
+
 test('zoom is 25% closer in every section; first student is visible but outside conversation range', () => {
   for (const section of Object.keys(mazeSections)) {
     for (const ratio of [.56, .65, 1, 2]) {
@@ -120,6 +135,7 @@ test('all walkable bottom-edge positions of B and D transition, not just the old
 })
 
 test('requested NPC and palm source-pixel offsets are applied', () => {
+  assert.equal(mazeNpcs.find(npc => npc.id === 'A-bench').x, 189 + 50 / 2)
   assert.equal(mazeNpcs.find(npc => npc.id === 'I-guide').y, 265)
   for (const [section, x, y] of [['A', 300, 340], ['B', 300, 246], ['C', 281, 335]]) {
     assert.deepEqual(mazePalms.find(palm => palm.section === section), { section, x, y })

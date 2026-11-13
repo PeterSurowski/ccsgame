@@ -14,17 +14,20 @@ export default function SleepingScene({ onChoose }) {
     if (finishedRef.current) return
     const video = videoRef.current
     try {
-      await video.play()
+      try {
+        await video.play()
+      } catch (failure) {
+        if (failure.name !== 'NotAllowedError' || finishedRef.current || !video.isConnected) throw failure
+        console.warn('Classroom autoplay with sound was blocked; retrying muted.')
+        video.muted = true
+        await video.play()
+      }
     } catch (failure) {
       if (finishedRef.current) return
       if (failure.name === 'AbortError' && !video.isConnected) return
-      if (failure.name === 'NotAllowedError') {
-        setStatus('start-required')
-      } else {
-        console.error('Sleeping-students video playback failed:', failure)
-        setError(`Unable to play the sleeping-students video: ${failure.message}`)
-        setStatus('error')
-      }
+      console.error('Sleeping-students video playback failed:', failure)
+      setError(`Unable to play the sleeping-students video: ${failure.message}`)
+      setStatus('error')
     }
   }, [])
 
@@ -44,10 +47,9 @@ export default function SleepingScene({ onChoose }) {
   }, [])
   const advance = useCallback(() => {
     if (status === 'dialogue') setStatus('choices')
-    else if (status === 'loading' || status === 'start-required') play()
-    else finish()
-  }, [status, finish, play])
-  const advanceHandlers = useSceneAdvance(status !== 'error' && status !== 'choices', advance)
+    else if (status === 'playing') finish()
+  }, [status, finish])
+  const advanceHandlers = useSceneAdvance(status === 'playing' || status === 'dialogue', advance)
   const ended = status === 'dialogue' || status === 'choices'
 
   return (
@@ -69,10 +71,9 @@ export default function SleepingScene({ onChoose }) {
           setError('Unable to load the sleeping-students freeze frame. Please reload the page.')
           setStatus('error')
         }} />
-      {(status === 'loading' || status === 'start-required') && (
+      {status === 'loading' && (
         <div className="video-notice" role="status">
-          <p>{status === 'loading' ? 'Loading classroom video...'
-            : 'Tap the screen or press Space to start the classroom video with sound.'}</p>
+          <p>Loading classroom video...</p>
         </div>
       )}
       {status === 'error' && <p className="video-notice" role="alert">{error}</p>}

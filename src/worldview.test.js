@@ -92,6 +92,19 @@ test('Susan can explore across the foyer', () => {
   assert.equal(canStand(across.x, across.y), true)
 })
 
+test('shared hallway and quad movement slides along jagged walls without crossing them', () => {
+  const stand = (x, y) => y >= x + Math.sin(x * 2) * .2
+  let position = { x: 100, y: 101, facing: 'right' }
+  for (let frame = 0; frame < 60; frame++) {
+    const next = moveSusanDirection(position, { dx: 1, dy: 0 }, 1 / 60, stand)
+    assert.ok(stand(next.x, next.y))
+    assert.ok(Math.hypot(next.x - position.x, next.y - position.y) <= 3 + 1e-9)
+    position = next
+  }
+  assert.ok(position.x > 180 && position.y > 180)
+  assert.equal(position.facing, 'right')
+})
+
 test('background, floor trace and starting positions are rendered at half scale', () => {
   assert.equal(BACKGROUND_SCALE, 0.5)
   assert.equal(WORLD_WIDTH, 512)

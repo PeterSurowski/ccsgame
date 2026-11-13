@@ -132,7 +132,8 @@ in his idle pose facing right toward the door, leaving the entrance clear.
 A glowing, bobbing yellow location arrow points to the door, using the same
 arrow artwork and animation as the campus map.
 His route uses the same world coordinates as the traced floor boundary.
-Walking up to the right doorway automatically enters the classroom scene;
+Walking up to the right doorway automatically enters the classroom scene.
+The enlarged approach area spans x=355..425 and y=120..195 world units.
 Space or a tap is not needed to enter. All Worldview interface
 text and character labels are removed except for the score header and controls hint (the image's
 printed signs remain). Asset errors are still reported visibly.
@@ -153,8 +154,9 @@ with sound, then displays [freezeframe-sleepingstudents.png](src/assets/scenes/f
 The browser version uses H.264 video, AAC audio, and fast-start MP4 metadata;
 the original HEVC video is retained but is not shipped in the build.
 Playback is requested when the scene mounts rather than waiting for media
-preloading, which iOS may defer. There is no separate classroom Play button;
-tap or Space while loading or when autoplay is blocked requests playback.
+preloading, which iOS may defer. There is no classroom Play button or
+tap-to-start prompt. Playback starts automatically with sound when permitted;
+if the browser blocks audible autoplay, it retries automatically muted.
 Dialogue appears after the video ends or is skipped:
 
 > Susan: What's happening?
@@ -173,8 +175,7 @@ The freeze frame stays behind the choices. Tap or click a choice to confirm it.
 The first Up or Down arrow highlights A in the score header's yellow; subsequent
 Up/Down presses select A/B, and Space confirms the highlighted choice.
 Space alone does not choose an option before one is highlighted.
-Playback and asset errors are visible; blocked classroom autoplay shows a
-tap-or-Space prompt.
+Playback and asset errors remain visible, including a failure of muted autoplay.
 
 ## Campus map
 
@@ -229,8 +230,10 @@ click, or nonrepeating Space dismisses the dialogue and resumes exploration.
 The dialogue appears once per quad playthrough, including across section returns.
 Collision data in [quadWalkable.json](src/quadWalkable.json) is generated from
 the three `quad-*-walkable.png` references: only solid red areas permit walking,
-inset by Susan's 13-world-unit foot radius. Unpainted grass, obstacles, and
-the student-shaped gap remain blocked. The reference images are never rendered
+inset by Susan's 13-world-unit foot radius. The upper-left guide's tiny paint
+cracks and enclosed holes are repaired before applying that inset, so they
+do not create invisible obstacles inside the walkway. Unpainted grass, trees,
+and the lower-left student-shaped gap remain blocked. The reference images are never rendered
 or imported into the game; only their generated collision rows are used.
 Artwork and reference dimensions must match; lower-left now renders at 632x424,
 and the other sections at 512x512. Regenerate after editing the red guides:
@@ -362,6 +365,10 @@ left/right with Arrow keys or by touching left/right of center, and follows
 Peter's scripted milestones: yard-sale Commodore 64, adulthood, young family,
 door-to-door client searches (including two repeatable building choices), and
 the M2Media breakthrough before fading back to the Susan interview scene.
+Translucent animated tapping fingers and matching arrow keycaps appear at
+the left and right sides until the player's first movement in either direction,
+replacing the bottom text instructions. They stay hidden for the rest of the
+flashback and do not intercept touch controls.
 Question A first keeps the interview image and shows Peter's "It all started at
 Mt. San Jacinto College..." lead-in. A separate tap/Space fades into the Maze
 Game, using the supplied illustrated campus backgrounds, arranged as
@@ -385,12 +392,15 @@ There is no corner title box. Palms use the requested image-relative placements.
 G's palm is shifted 50 source-image pixels right and up; D's is shifted
 50 source-image pixels left (25 world units per 50 image pixels).
 A's palm is shifted 50 pixels right/up, B's 50 pixels up, and C's
-50 pixels right/100 pixels up. The seated NPC on I is shifted 100 pixels up.
-Maze movement tries nearby forward directions when blocked, allowing Peter to
-slide along diagonal and jagged boundaries while keeping his feet walkable.
-This behavior is maze-specific; the earlier Worldview movement is unchanged.
+50 pixels right/100 pixels up. The seated NPC on I is shifted 100 pixels up,
+and A's bench student is shifted 50 source-image pixels right.
+The maze, quad, and Susan hallway share substepped movement that tries nearby
+forward directions when blocked, sliding along diagonal and jagged boundaries
+while keeping character feet walkable.
 Image changes happen at path endpoints,
 with a re-entry guard to prevent immediate bouncing.
+Rightward maze exits and the lower-left quad's right exit activate 50 world
+units farther from their previous edge thresholds; other exits are unchanged.
 Stationary, transparent cutouts of the supplied standing/seated students
 offer route-accurate clues when
 approached. The opening narration pauses movement and time. A nearby first
@@ -431,6 +441,7 @@ Result text, images, and transitions live in [ResumeResult.jsx](src/ResumeResult
 C shows Peter's "Because I love to teach!" reply on the interview image.
 Tap/Space fades to [platformer-background.jpg](src/platformer-background.jpg),
 his continuation, and translucent finger/mouse drawing instructions.
+The rescue playfield has no top counts/line-limit HUD or "REAL WORLD" label.
 Tap/Space begins the rescue game. The finger and mouse icons circle outside the
 dialogue panel, with no text below them. Ten students walk right automatically;
 the player cannot steer them. Five gaps/steps follow the supplied

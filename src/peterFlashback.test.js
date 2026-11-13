@@ -8,6 +8,28 @@ function moveLeft(state, steps = 1) {
   return current
 }
 
+test('movement hints are dismissed by the first actual move in either direction and stay dismissed', () => {
+  for (const dx of [-8, 8]) {
+    let state = createFlashback()
+    assert.equal(state.hasMoved, false)
+    state = flashbackReducer(state, { type: 'move', dx: 0 })
+    assert.equal(state.hasMoved, false)
+    state = flashbackReducer(state, { type: 'move', dx })
+    assert.equal(state.hasMoved, true)
+    state = flashbackReducer(state, { type: 'move', dx: -dx })
+    assert.equal(state.x, 0)
+    assert.equal(state.hasMoved, true)
+    state = moveLeft(state, 20)
+    assert.equal(state.mode, 'narration')
+    state = flashbackReducer(state, { type: 'continue' })
+    assert.equal(state.mode, 'walking')
+    assert.equal(state.hasMoved, true)
+  }
+  const blocked = { ...createFlashback(), x: 70 }
+  assert.equal(flashbackReducer(blocked, { type: 'move', dx: 8 }).hasMoved, false)
+  assert.equal(createFlashback().hasMoved, false)
+})
+
 test('intro milestones and adult switch trigger in order', () => {
   let state = createFlashback()
   state = moveLeft(state, 20)

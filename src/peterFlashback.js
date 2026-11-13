@@ -12,6 +12,7 @@ export function createFlashback() {
     x: 0,
     facing: -1,
     walkedLeft: false,
+    hasMoved: false,
     milestone: 0,
     adult: false,
     mode: 'walking',
@@ -30,6 +31,7 @@ export function flashbackReducer(state, action) {
     const next = {
       ...state,
       x,
+      hasMoved: state.hasMoved || x !== state.x,
       facing: action.dx < 0 ? -1 : 1,
       walkedLeft: state.walkedLeft || action.dx < 0,
     }
